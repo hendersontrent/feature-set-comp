@@ -74,25 +74,42 @@ pullTSCprobs <- function(){
         mutate(id = row_number()) %>%
         mutate(set_split = "Test")
       
-      # Merge
+      #----------------------------
+      # Wrangle data to long format
+      #----------------------------
       
-      tmp <- bind_rows(train, test)
+      # Train
       
-      thecols <- colnames(tmp)
-      keepcols <- thecols[!thecols %in% c("target", "id", "set_split")]
+      thecolstr <- colnames(train)
+      keepcolstr <- thecolstr[!thecolstr %in% c("target", "id", "set_split")]
       
-      tmp1 <- tmp %>%
+      train2 <- train %>%
         mutate(problem = i) %>%
-        tidyr::pivot_longer(cols = all_of(keepcols), names_to = "timepoint", values_to = "values") %>%
+        tidyr::pivot_longer(cols = all_of(keepcolstr), names_to = "timepoint", values_to = "values") %>%
         mutate(timepoint = as.numeric(gsub(".*?([0-9]+).*", "\\1", timepoint)))
       
+      # Test
+      
+      thecolste <- colnames(test)
+      keepcolste <- thecolste[!thecolste %in% c("target", "id", "set_split")]
+      
+      test2 <- test %>%
+        mutate(problem = i) %>%
+        tidyr::pivot_longer(cols = all_of(keepcolste), names_to = "timepoint", values_to = "values") %>%
+        mutate(timepoint = as.numeric(gsub(".*?([0-9]+).*", "\\1", timepoint)))
+      
+      #------
+      # Merge
+      #------
+      
+      tmp <- bind_rows(train2, test2)
       problemStorage[[i]] <- tmp
       
     }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
   problemStorage2 <- rbindlist(problemStorage, use.names = TRUE)
-  return(problemStorage)
+  return(problemStorage2)
 }
 
 allProbs <- pullTSCprobs()
