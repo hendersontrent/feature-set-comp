@@ -26,16 +26,44 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
 calculate_feats_all_probs <- function(data){
   
-  x
+  message("Calculating features... This will take a while.")
   
+  sets <- unique(data$problem)
+  storage <- list()
+  
+  for(s in sets){
+    
+    tmp <- data %>%
+      filter(problem == s)
+    
+    # Get accessory variables to join back in
+    
+    accessories <- tmp %>%
+      group_by(id, target, set_split, problem) %>%
+      summarise(counter = n()) %>%
+      ungroup() %>%
+      dplyr::select(-c(counter))
+    
+    # Calculate features
+    
+    feats <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "all")
+    feat1 <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "tsfresh")
+    feats2 <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "tsfel")
+    
+    # Join in accessory variables and store
+    
+    feats3 <- bind_rows(feats, feats1, feats2) %>%
+      left_join(accessories, by = c("id" = "id"))
+    
+    storage[[s]] <- feats3
+  }
+  
+  outputData <- rbindlist(storage, use.names = TRUE)
+  return(outputData)
 }
 
-#----------------- Save features ----------------------
-
-# Merge together
-
-
+featureMatrix <- calculate_feats_all_probs(data = allProbs)
 
 # Save as .Rda
 
-save(featureCalcs, file = "data/featureCalcs.Rda")
+save(featureMatrix, file = "data/featureMatrix.Rda")
