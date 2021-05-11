@@ -26,9 +26,3 @@ if(!dir.exists('webscraping')) dir.create('webscraping')
 if(!dir.exists('analysis')) dir.create('analysis')
 if(!dir.exists('output')) dir.create('output')
 if(!dir.exists('data')) dir.create('data')
-
-# Run webscraper if data does not exist
-
-if(!exists('data/allProbs.Rda')){
-  source("webscraping/pullTSCprobs.R")
-}

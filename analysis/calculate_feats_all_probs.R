@@ -11,6 +11,14 @@
 # Author: Trent Henderson, 7 May 2021
 #------------------------------------
 
+# Read in data
+
+load("data/allProbs.Rda")
+
+# Load in helper functions until {theft} is fixed
+
+source("helpers/theft-helpers.R")
+
 # Fix Python environment
 
 reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
@@ -26,12 +34,14 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
 calculate_feats_all_probs <- function(data){
   
-  message("Calculating features... This will take a while.")
-  
   sets <- unique(data$problem)
   storage <- list()
   
   for(s in sets){
+    
+    tryCatch({
+    
+    message(paste0("Calculating features for ",s))
     
     tmp <- data %>%
       filter(problem == s)
@@ -46,9 +56,9 @@ calculate_feats_all_probs <- function(data){
     
     # Calculate features
     
-    feats <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "all")
-    feat1 <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "tsfresh")
-    feats2 <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "tsfel")
+    feats <- theft::calculate_features(data = tmp, id_var = "id", time_var = "timepoint", values_var = "values", feature_set = "all", tsfresh_cleanup == FALSE)
+    feats1 <- calc_tsfresh(data = tmp, column_id = "id", column_sort = "timepoint", cleanup = "No")
+    feats2 <- calc_tsfel(data = tmp)
     
     # Join in accessory variables and store
     
@@ -56,6 +66,7 @@ calculate_feats_all_probs <- function(data){
       left_join(accessories, by = c("id" = "id"))
     
     storage[[s]] <- feats3
+    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
   outputData <- rbindlist(storage, use.names = TRUE)

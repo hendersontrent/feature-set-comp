@@ -70,8 +70,10 @@ pullTSCprobs <- function(){
         mutate(id = row_number()) %>%
         mutate(set_split = "Train")
       
+      themax <- max(train$id) # To add in test set to avoid duplicate IDs
+      
       test <- foreign::read.arff(unz(temp, paste0(path,i,"_TEST.arff"))) %>%
-        mutate(id = row_number()) %>%
+        mutate(id = row_number()+themax) %>% # Adjust relative to train set to stop double-ups
         mutate(set_split = "Test")
       
       #----------------------------
