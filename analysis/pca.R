@@ -42,7 +42,7 @@ do_pca <- function(data, problem_name = NULL){
       labs(title = NULL,
            subtitle = NULL,
            caption = NULL) +
-      labs(title = problem_name)
+      labs(title = s)
     
     storage[[s]] <- myplot
   }
@@ -52,7 +52,7 @@ do_pca <- function(data, problem_name = NULL){
   n <- length(storage)
   ncols <- floor(sqrt(n))
   
-  CairoPNG(paste0("output/lowdim_",problem_name,".png"), 800, 600)
+  CairoPNG(paste0("output/lowdim_",problem_name,".png"), 800, 800)
   do.call("grid.arrange", c(storage, ncol = ncols))
   dev.off()
 }
