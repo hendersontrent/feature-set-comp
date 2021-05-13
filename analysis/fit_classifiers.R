@@ -15,6 +15,21 @@
 
 load("data/featureCalcs.Rda")
 
+# Fix Python environment
+
+reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
+
 #---------------- Fit classifiers ----------------
 
+#' Function to automatically run all classifiers by feature set and problem
+#' 
+#' @param data the dataframe containing feature matrices and groups to use
+#' @return a dataframe with class-balanced classification accuracy by problem and feature set
+#' @author Trent Henderson
+#' 
 
+run_all_classifiers <- function(data){
+  
+  x
+  
+}

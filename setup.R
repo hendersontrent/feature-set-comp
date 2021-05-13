@@ -19,6 +19,7 @@ library(Rcatch22) # devtools::install_github("hendersontrent/Rcatch22")
 library(theft) # devtools::install_github("hendersontrent/theft")
 library(Cairo)
 library(reticulate)
+library(gridExtra)
 
 # Create important folders if none exist
 

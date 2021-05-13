@@ -28,7 +28,7 @@ do_pca <- function(data, problem_name = NULL){
   tmp <- data %>%
     filter(problem == problem_name)
   
-  sets <- unique(tmp$feature_set)
+  sets <- unique(tmp$method)
   storage <- list()
   
   # Produce plots
@@ -36,46 +36,31 @@ do_pca <- function(data, problem_name = NULL){
   for(s in sets){
     
     tmp1 <- tmp %>%
-      filer(feature_set == s)
+      filter(method == s)
     
     myplot <- theft::plot_low_dimension(data = tmp1, is_normalised = FALSE, id_var = "id", group_var = "target", method = "z-score", plot = TRUE) +
       labs(title = NULL,
            subtitle = NULL,
            caption = NULL) +
-      labs(title = problem_name,
-           subtitle = s) # Should probably find a way to produce a single title for all plots
+      labs(title = problem_name)
     
     storage[[s]] <- myplot
   }
   
   # Merge into single graphic
   
-  library(gridExtra)
-  
   n <- length(storage)
   ncols <- floor(sqrt(n))
-  p <- do.call("grid.arrange", c(storage, ncol = ncols))
-  return(p)
+  
+  CairoPNG(paste0("output/lowdim_",problem_name,".png"), 800, 600)
+  do.call("grid.arrange", c(storage, ncol = ncols))
+  dev.off()
 }
 
 # Produce plots for each problem
 
 problems <- unique(featureMatrix$problem)
-storage2 <- list()
 
 for(p in problems){
-  
-  myplot <- do_pca(data = featureMatrix, problem_name = p)
-  storage2[[p]] <- myplot
+  do_pca(data = featureMatrix, problem_name = p)
 }
-
-#-------------- Final PDF ---------
-
-lengths <- length(storage2)
-
-CairoPDF("output/pca.pdf", 11, 8)
-for(l in lengths){
-  temp <- storage2[[l]]
-  print(temp)
-}
-dev.off()
