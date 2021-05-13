@@ -38,15 +38,12 @@ pullTSCprobs <- function(){
                      "RightWhaleCalls", "ProximalPhalanxOutlineCorrect", "PowerCons",
                      "PhalangesOutlinesCorrect", "MotorImagery", "MoteStrain", 
                      "MiddlePhalanxOutlineCorrect", "Lightning2", "ItalyPowerDemand", 
-                     "HouseTwenty", "Herring", 
-                     "HandOutlines", "Ham", "GunPointOldVersusYoung", 
+                     "HouseTwenty", "Herring", "HandOutlines", "Ham", "GunPointOldVersusYoung", 
                      "GunPointMaleVersusFemale", "GunPointAgeSpan", "GunPoint", 
                      "FreezerSmallTrain", "FreezerRegularTrain", "FordB",
-                     "FordA", "ECGFiveDays", 
-                     "ECG200", "Earthquakes", "DodgerLoopWeekend", 
+                     "FordA", "ECGFiveDays", "ECG200", "Earthquakes", "DodgerLoopWeekend", 
                      "DodgerLoopGame", "DistalPhalanxOutlineCorrect", "Computers", 
-                     "Coffee", "Chinatown", 
-                     "BirdChicken", "BeetleFly")
+                     "Coffee", "Chinatown", "BirdChicken", "BeetleFly")
   
   # --------------- Webscrape the data ------------
   
