@@ -60,30 +60,22 @@ do_pca <- function(data, problem_name = NULL){
 
 # Produce plots for each problem
 
-p <- do_pca(data = featureMatrix, problem_name = "Yoga")
-p1 <- do_pca(data = featureMatrix, problem_name = "WormsTwoClass")
-p2 <- do_pca(data = featureMatrix, problem_name = "Wine")
-p3 <- do_pca(data = featureMatrix, problem_name = "Wafer")
-p4 <- do_pca(data = featureMatrix, problem_name = "TwoLeadECG")
-p5 <- do_pca(data = featureMatrix, problem_name = "ToeSegmentation2")
-p6 <- do_pca(data = featureMatrix, problem_name = "ShapeletSim")
-p7 <- do_pca(data = featureMatrix, problem_name = "SemgHandGenderCh2")
-p8 <- do_pca(data = featureMatrix, problem_name = "ProximalPhalanxOutlineCorrect")
-p9 <- do_pca(data = featureMatrix, problem_name = "")
-p10 <- do_pca(data = featureMatrix, problem_name = "")
-p11 <- do_pca(data = featureMatrix, problem_name = "")
+problems <- unique(featureMatrix$problem)
+storage2 <- list()
+
+for(p in problems){
+  
+  myplot <- do_pca(data = featureMatrix, problem_name = p)
+  storage2[[p]] <- myplot
+}
 
 #-------------- Final PDF ---------
 
+lengths <- length(storage2)
+
 CairoPDF("output/pca.pdf", 11, 8)
-print(p)
-print(p1)
-print(p2)
-print(p3)
-print(p4)
-print(p5)
-print(p6)
-print(p7)
-print(p8)
-print(p9)
+for(l in lengths){
+  temp <- storage2[[l]]
+  print(temp)
+}
 dev.off()

@@ -45,8 +45,7 @@ pullTSCprobs <- function(){
                      "FordA", "ECGFiveDays", 
                      "ECG200", "Earthquakes", "DodgerLoopWeekend", 
                      "DodgerLoopGame", "DistalPhalanxOutlineCorrect", "Computers", 
-                     "Coffee", "Chinatown", 
-                     "BirdChicken", "BeetleFly")
+                     "Coffee", "Chinatown", "BirdChicken", "BeetleFly")
   
   # --------------- Webscrape the data ------------
   
