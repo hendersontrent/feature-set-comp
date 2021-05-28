@@ -29,11 +29,12 @@ rm(featureMatrix)
 #' 
 #' @param data the dataframe of feature calculations to use
 #' @param low_dim_method the low dimension representation algorithm to use
+#' @param perplexity the perplexity hyperparameter to use if t-SNE algorithm is selected. Defaults to 30
 #' @return ggplot2 graphic object containing matrix of plots in two dimensions
 #' @author Trent Henderson
 #' 
 
-full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP")){
+full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perplexity = 30){
   
   # Run calculations
   
@@ -44,11 +45,101 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP")){
     
     if(method == "tSNE"){
       
-      x
+      tmp <- data %>%
+        filter(problem == i)
+      
+      # Norm the data
+      
+      normed <- tmp %>%
+        dplyr::select(c(id, names, values)) %>%
+        dplyr::group_by(names) %>%
+        dplyr::mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+        dplyr::ungroup() %>%
+        tidyr::drop_na()
+      
+      # Produce matrix
+      
+      dat <- normed %>%
+        tidyr::pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+        tibble::column_to_rownames(var = "id")
+      
+      # Remove any columns with all NAs to avoid whole dataframe being dropped
+      
+      dat_filtered <- dat[colSums(!is.na(dat)) > 0]
+      
+      # Drop any remaining rows with NAs
+      
+      dat_filtered <- dat_filtered %>%
+        tidyr::drop_na()
+      
+      # Fit t-SNE
+      
+      set.seed(123)
+      
+      tsneOut <- Rtsne::Rtsne(as.matrix(dat_filtered), perplexity = perplexity, max_iter = 5000, dims = 2,
+                              check_duplicates = FALSE)
+      
+      # Retrieve 2-dimensional embedding and add in unique IDs
+      
+      id_ref <- dat_filtered %>%
+        tibble::rownames_to_column(var = "id") %>%
+        dplyr::select(c(id))
+      
+      fits <- data.frame(.fitted1 = tsneOut$Y[,1],
+                         .fitted2 = tsneOut$Y[,2]) %>%
+        dplyr::mutate(id = id_ref$id) %>%
+        mutate(problem = i)
+      
+      storage[[i]] <- fits
       
     } else if(method == "UMAP"){
       
-      x
+      tmp <- data %>%
+        filter(problem == i)
+      
+      # Norm the data
+      
+      normed <- tmp %>%
+        dplyr::select(c(id, names, values)) %>%
+        dplyr::group_by(names) %>%
+        dplyr::mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+        dplyr::ungroup() %>%
+        tidyr::drop_na()
+      
+      # Produce matrix
+      
+      dat <- normed %>%
+        tidyr::pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+        tibble::column_to_rownames(var = "id")
+      
+      # Remove any columns with all NAs to avoid whole dataframe being dropped
+      
+      dat_filtered <- dat[colSums(!is.na(dat)) > 0]
+      
+      # Drop any remaining rows with NAs
+      
+      dat_filtered <- dat_filtered %>%
+        tidyr::drop_na()
+      
+      # Fit UMAP
+      
+      set.seed(123)
+      
+      umapOut <- umap(as.matrix(dat_filtered))
+      
+      # Retrieve 2-dimensional embedding and add in unique IDs
+      
+      id_ref <- dat_filtered %>%
+        tibble::rownames_to_column(var = "id") %>%
+        dplyr::select(c(id))
+      
+      fits <- as.data.frame(umapOut$layout) %>%
+        rename(.fitted1 = 1,
+               .fitted2 = 2) %>%
+        dplyr::mutate(id = id_ref$id) %>%
+        mutate(problem = i)
+      
+      storage[[i]] <- fits
       
     } else{
       tmp1 <- data %>%
@@ -84,8 +175,8 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP")){
                            "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6v", "#6a3d9a",
                            "#ffff99", "#b15928")
     
-    outs %>%
-      ggplot(aes(x = dim1, y = dim2)) %>%
+    p <- outs %>%
+      ggplot(aes(x = .fitted1, y = .fitted2)) %>%
       geom_point() +
       labs(title = low_dim_method,
            x = "Dimension 1",
@@ -94,6 +185,7 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP")){
       theme_bw() +
       theme(panel.grid.minor = element_blank()) +
       facet_wrap(~problem, ncol = 5)
+    print(p)
   } else{
     n <- length(storage)
     ncols <- floor(sqrt(n))
