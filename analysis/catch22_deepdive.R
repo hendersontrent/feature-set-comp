@@ -81,11 +81,12 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       # Retrieve 2-dimensional embedding and add in unique IDs
       
-      groups <- data %>%
+      groups <- tmp %>%
         dplyr::group_by(id, target) %>%
         dplyr::summarise(counter = dplyr::n()) %>%
         dplyr::ungroup() %>%
-        dplyr::select(-c(counter))
+        dplyr::select(-c(counter)) %>%
+        mutate(id = as.character(id))
       
       id_ref <- dat_filtered %>%
         tibble::rownames_to_column(var = "id") %>%
@@ -94,7 +95,8 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       fits <- data.frame(.fitted1 = tsneOut$Y[,1],
                          .fitted2 = tsneOut$Y[,2]) %>%
-        dplyr::mutate(id = id_ref$id) %>%
+        dplyr::mutate(id = id_ref$id,
+                      target = id_ref$target) %>%
         mutate(problem = i)
       
       storage[[i]] <- fits
@@ -136,11 +138,12 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       # Retrieve 2-dimensional embedding and add in unique IDs
       
-      groups <- data %>%
+      groups <- tmp %>%
         dplyr::group_by(id, target) %>%
         dplyr::summarise(counter = dplyr::n()) %>%
         dplyr::ungroup() %>%
-        dplyr::select(-c(counter))
+        dplyr::select(-c(counter)) %>%
+        mutate(id = as.character(id))
       
       id_ref <- dat_filtered %>%
         tibble::rownames_to_column(var = "id") %>%
@@ -150,7 +153,8 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       fits <- as.data.frame(umapOut$layout) %>%
         rename(.fitted1 = 1,
                .fitted2 = 2) %>%
-        dplyr::mutate(id = id_ref$id) %>%
+        dplyr::mutate(id = id_ref$id,
+                      target = id_ref$target) %>%
         mutate(problem = i)
       
       storage[[i]] <- fits
@@ -194,10 +198,12 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       geom_point() +
       labs(title = low_dim_method,
            x = "Dimension 1",
-           y = "Dimension 2") +
+           y = "Dimension 2",
+           colour = "Group") +
       scale_color_manual(values = available_colours) +
       theme_bw() +
-      theme(panel.grid.minor = element_blank()) +
+      theme(panel.grid.minor = element_blank(),
+            legend.position = "bottom") +
       facet_wrap(~problem, ncol = 5)
     print(p)
   } else{
