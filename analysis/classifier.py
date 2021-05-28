@@ -12,7 +12,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import make_scorer, balanced_accuracy_score
-from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 
 def fit_classifier(X_train, y_train, X_test, y_test):
 
@@ -25,14 +25,12 @@ def fit_classifier(X_train, y_train, X_test, y_test):
 
     # Fit classifier
 
-    clf = GaussianNB()
+    clf = SVC(kernel = 'linear', class_weight = 'balanced')
     clf.fit(X_train, y_train)
 
     # Predict on test set
 
     scores = clf.balanced_accuracy_score(X_test, y_test)
-    #scoring = make_scorer(balanced_accuracy_score)
-    #scores = score(clf, X_test, y_test, scoring = scoring)
 
     # Return results
 
