@@ -31,10 +31,6 @@ reticulate::source_python("analysis/classifier.py")
 
 run_all_classifiers <- function(data){
   
-  # Widen data
-  
-  x
-  
   # Fit classifier
   
   theMethods <- unique(data$method)
@@ -54,19 +50,30 @@ run_all_classifiers <- function(data){
           filter(method == i) %>%
           filter(problem == j) %>%
           drop_na() %>%
-          mutate(group_binary = as.factor(ifelse(group == "Control",0,1)))
+          dplyr::select(c(id, names, values, set_split, target)) %>%
+          pivot_wider(id_cols = c("id", "set_split", "target"), names_from = "names", values_from = "values")
         
         # Separate predictor design matrix and response vector for conversion to NumPy/Pandas
         # and train-test splits
         
         train <- data2 %>%
-          filter(set_split == "Train")
+          filter(set_split == "Train") %>%
+          dplyr::select(-c(set_split))
+        
+        X_train <- train[,-target]
+        y_train <- train$target
         
         test <- data2 %>%
-          filter(set_split == "Test")
+          filter(set_split == "Test") %>%
+          dplyr::select(-c(set_split))
+        
+        X_test <- test[,-target]
+        y_test <- test$target
         
         outputData <- fit_classifier(X_train = X_train, y_train = y_train, 
-                              X_test = X_test, y_test = y_test)
+                              X_test = X_test, y_test = y_test) %>%
+          mutate(problem = j,
+                 method = i)
         
         storage1[[j]] <- outputData
        })
@@ -82,5 +89,7 @@ run_all_classifiers <- function(data){
   unnested4 <- do.call(rbind, storage[[4]])
   unnested5 <- do.call(rbind, storage[[5]])
   classifierOutputs <- bind_rows(unnested1, unnested2, unnested3, unnested4, unnested5)
-  
+  return(classifierOutputs)
 }
+
+run_all_classifiers(data = featureMatrix)
