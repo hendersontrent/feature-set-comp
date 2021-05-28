@@ -43,7 +43,7 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
   
   for(i in problems){
     
-    if(method == "tSNE"){
+    if(low_dim_method == "tSNE"){
       
       tmp <- data %>%
         filter(problem == i)
@@ -81,9 +81,16 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       # Retrieve 2-dimensional embedding and add in unique IDs
       
+      groups <- data %>%
+        dplyr::group_by(id, target) %>%
+        dplyr::summarise(counter = dplyr::n()) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-c(counter))
+      
       id_ref <- dat_filtered %>%
         tibble::rownames_to_column(var = "id") %>%
-        dplyr::select(c(id))
+        dplyr::select(c(id)) %>%
+        inner_join(groups, by = c("id" = "id"))
       
       fits <- data.frame(.fitted1 = tsneOut$Y[,1],
                          .fitted2 = tsneOut$Y[,2]) %>%
@@ -92,7 +99,7 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       storage[[i]] <- fits
       
-    } else if(method == "UMAP"){
+    } else if(low_dim_method == "UMAP"){
       
       tmp <- data %>%
         filter(problem == i)
@@ -129,9 +136,16 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
       
       # Retrieve 2-dimensional embedding and add in unique IDs
       
+      groups <- data %>%
+        dplyr::group_by(id, target) %>%
+        dplyr::summarise(counter = dplyr::n()) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-c(counter))
+      
       id_ref <- dat_filtered %>%
         tibble::rownames_to_column(var = "id") %>%
-        dplyr::select(c(id))
+        dplyr::select(c(id)) %>%
+        inner_join(groups, by = c("id" = "id"))
       
       fits <- as.data.frame(umapOut$layout) %>%
         rename(.fitted1 = 1,
@@ -150,12 +164,12 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
              subtitle = NULL,
              caption = NULL)
       
-      storage[[s]] <- myplot
+      storage[[i]] <- myplot
     }
     
   }
   
-  if(method != "PCA"){
+  if(low_dim_method != "PCA"){
    
     outs <- rbindlist(storage, use.names = TRUE) 
     
@@ -166,7 +180,7 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
   # Draw plots and store output
   
   CairoPNG(paste0("output/catch22_lowdim_",low_dim_method,".png"), 1200, 1200)
-  if(method != "PCA"){
+  if(low_dim_method != "PCA"){
     
     # Define a nice colour palette
     # Palette from https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
@@ -176,7 +190,7 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
                            "#ffff99", "#b15928")
     
     p <- outs %>%
-      ggplot(aes(x = .fitted1, y = .fitted2)) %>%
+      ggplot(aes(x = .fitted1, y = .fitted2, colour = target)) +
       geom_point() +
       labs(title = low_dim_method,
            x = "Dimension 1",
@@ -192,7 +206,6 @@ full_low_dim <- function(data, low_dim_method = c("PCA", "tSNE", "UMAP"), perple
     do.call("grid.arrange", c(storage, ncol = ncols))
   }
   dev.off()
-  
 }
 
 #-------------- Run function ----------------
