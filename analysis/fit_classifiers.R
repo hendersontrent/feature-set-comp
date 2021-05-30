@@ -117,4 +117,5 @@ run_all_classifiers <- function(data){
   return(classifierOutputs)
 }
 
-run_all_classifiers(data = featureMatrix)
+classifierOutputs <- run_all_classifiers(data = featureMatrix)
+save(classifierOutputs, file = "data/classifierOutputs.Rda")
