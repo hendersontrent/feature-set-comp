@@ -56,18 +56,20 @@ run_all_classifiers <- function(data){
         # Separate predictor design matrix and response vector for conversion to NumPy/Pandas
         # and train-test splits
         
+        drops <- c("target")
+        
         train <- data2 %>%
           filter(set_split == "Train") %>%
-          dplyr::select(-c(set_split))
+          dplyr::select(-c(id, set_split))
         
-        X_train <- train[,-target]
+        X_train <- as.matrix(train[ , !(names(train) %in% drops)])
         y_train <- train$target
         
         test <- data2 %>%
           filter(set_split == "Test") %>%
-          dplyr::select(-c(set_split))
+          dplyr::select(-c(id, set_split))
         
-        X_test <- test[,-target]
+        X_test <- as.matrix(test[ , !(names(test) %in% drops)])
         y_test <- test$target
         
         outputData <- fit_classifier(X_train = X_train, y_train = y_train, 
