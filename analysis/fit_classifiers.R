@@ -1,4 +1,3 @@
-Cc
 #----------------------------------------------
 # This script sets out to produce
 # classifiers for each problem and
@@ -32,14 +31,19 @@ reticulate::source_python("analysis/classifier.py")
 
 run_all_classifiers <- function(data){
   
+  # Norm the data
+  
+  normed <- data %>%
+    dplyr::group_by(names) %>%
+    dplyr::mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+    dplyr::ungroup() %>%
+    tidyr::drop_na()
+  
   # Fit classifier
   
-  theMethods <- unique(data$method)
-  theProblems <- unique(data$problem)
+  theMethods <- unique(normed$method)
+  theProblems <- unique(normed$problem)
   storage <- list()
-  
-  #dropper <- "feasts"
-  #theMethods <- theMethods[!theMethods %in% dropper]
   
   for(i in theMethods){
     storage1 <- list()
@@ -50,7 +54,7 @@ run_all_classifiers <- function(data){
         
         message(paste0("Computing model for: i = ",i," & j = ",j,". This will take a while..."))
         
-        data2 <- data %>%
+        data2 <- normed %>%
           filter(method == i) %>%
           filter(problem == j) %>%
           drop_na() %>%
@@ -94,6 +98,13 @@ run_all_classifiers <- function(data){
   unnested3 <- do.call(rbind, storage[[3]])
   unnested4 <- do.call(rbind, storage[[4]])
   unnested5 <- do.call(rbind, storage[[5]])
+  
+  rownames(unnested1) <- NULL
+  rownames(unnested2) <- NULL
+  rownames(unnested3) <- NULL
+  rownames(unnested4) <- NULL
+  rownames(unnested5) <- NULL
+  
   classifierOutputs <- bind_rows(unnested1, unnested2, unnested3, unnested4, unnested5)
   return(classifierOutputs)
 }
