@@ -31,13 +31,16 @@ reticulate::source_python("analysis/classifier.py")
 
 run_all_classifiers <- function(data){
   
+  data <- featureMatrix
+  
   # Norm the data
   
   normed <- data %>%
-    dplyr::group_by(names) %>%
-    dplyr::mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+    dplyr::group_by(set_split, names) %>% # Scales train and test independently for now
+    dplyr::mutate(values = normalise_feature_vector(values, method = "MinMax")) %>%
     dplyr::ungroup() %>%
-    tidyr::drop_na()
+    tidyr::drop_na() %>%
+    filter(is.finite(values))
   
   # Fit classifier
   
@@ -57,7 +60,6 @@ run_all_classifiers <- function(data){
         data2 <- normed %>%
           filter(method == i) %>%
           filter(problem == j) %>%
-          drop_na() %>%
           dplyr::select(c(id, names, values, set_split, target)) %>%
           pivot_wider(id_cols = c("id", "set_split", "target"), names_from = "names", values_from = "values")
         
@@ -70,14 +72,20 @@ run_all_classifiers <- function(data){
           filter(set_split == "Train") %>%
           dplyr::select(-c(id, set_split))
         
-        X_train <- as.matrix(train[ , !(names(train) %in% drops)])
+        X_train <- train[ , !(names(train) %in% drops)]
+        X_train <- X_train[colSums(!is.na(X_train)) > 0]
+        X_train <- X_train %>% drop_na()
+        X_train <- as.matrix(X_train)
         y_train <- train$target
         
         test <- data2 %>%
           filter(set_split == "Test") %>%
           dplyr::select(-c(id, set_split))
         
-        X_test <- as.matrix(test[ , !(names(test) %in% drops)])
+        X_test <- test[ , !(names(test) %in% drops)]
+        X_test <- X_test[colSums(!is.na(X_test)) > 0]
+        X_test <- X_test %>% drop_na()
+        X_test <- as.matrix(X_test)
         y_test <- test$target
         
         outputData <- fit_classifier(X_train = X_train, y_train = y_train, 
@@ -86,7 +94,7 @@ run_all_classifiers <- function(data){
                  problem = j)
         
         storage1[[j]] <- outputData
-      })
+      }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
     }
     storage[[i]] <- storage1
   }
