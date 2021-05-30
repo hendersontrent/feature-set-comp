@@ -30,7 +30,9 @@ def fit_classifier(X_train, y_train, X_test, y_test):
 
     # Predict on test set
 
-    scores = clf.balanced_accuracy_score(X_test, y_test)
+    predictions = clf.predict(X_test)
+    accuracy = balanced_accuracy_score(y_test, predictions)
+    scores = '{0:.2f}'.format(accuracy*100)
 
     # Return results
 

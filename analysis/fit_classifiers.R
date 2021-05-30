@@ -1,3 +1,4 @@
+Cc
 #----------------------------------------------
 # This script sets out to produce
 # classifiers for each problem and
@@ -37,12 +38,15 @@ run_all_classifiers <- function(data){
   theProblems <- unique(data$problem)
   storage <- list()
   
+  #dropper <- "feasts"
+  #theMethods <- theMethods[!theMethods %in% dropper]
+  
   for(i in theMethods){
     storage1 <- list()
     
     for(j in theProblems){
       
-      try({ 
+      tryCatch({
         
         message(paste0("Computing model for: i = ",i," & j = ",j,". This will take a while..."))
         
@@ -73,15 +77,15 @@ run_all_classifiers <- function(data){
         y_test <- test$target
         
         outputData <- fit_classifier(X_train = X_train, y_train = y_train, 
-                              X_test = X_test, y_test = y_test) %>%
-          mutate(problem = j,
-                 method = i)
+                                     X_test = X_test, y_test = y_test) %>%
+          mutate(method = i,
+                 problem = j)
         
         storage1[[j]] <- outputData
-       })
-     }
-    storage[[i]] <- storage1
+      })
     }
+    storage[[i]] <- storage1
+  }
   
   # Unlist and return results
   
