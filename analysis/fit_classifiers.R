@@ -31,7 +31,7 @@ reticulate::source_python("analysis/classifier.py")
 
 run_all_classifiers <- function(data){
   
-  data <- featureMatrix
+  #data <- featureMatrix
   
   # Norm the data
   
