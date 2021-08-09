@@ -111,5 +111,7 @@ pullTSCprobs <- function(){
   return(problemStorage2)
 }
 
+# Run function and save output
+
 allProbs <- pullTSCprobs()
-save(allProbs, file = "data/allProbs.Rda") # Store as download is very large
+save(allProbs, file = "data/allProbs.Rda")
