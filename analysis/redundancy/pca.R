@@ -1,66 +1,102 @@
 #------------------------------------
-# This script sets out to produce a
-# PCA analysis and plot for each
-# feature set and problem
+# This script sets out to calculate
+# dimension reduction properties on
+# the extracted feature matrices for
+# the Empirical 1000
 #
 # NOTE: setup.R must be run first
 #------------------------------------
 
-#-------------------------------------
-# Author: Trent Henderson, 12 May 2021
-#-------------------------------------
+#---------------------------------------
+# Author: Trent Henderson, 9 August 2021
+#---------------------------------------
 
-# Read in data
+# Load feature matrix
 
-load("data/featureMatrix.Rda")
+load("data/Emp1000FeatMat.Rda")
 
-#-------------- PCA ---------------
+#-------------- Do PCA for each feature set ------------
 
-#' Function to calculate PCA for each feature set and time-series problem
+#' Function to produce PCA on each Dataset x Feature matrix and bind results
 #' 
-#' @param data the dataframe of feature calculations to use
-#' @return ggplot2 graphic object containing matrix of plots of PCA outputs in two dimensions
+#' @param data the Dataset x Feature matrix dataframe
+#' @return a dataframe containing PC results
 #' @author Trent Henderson
 #' 
 
-do_pca <- function(data, problem_name = NULL){
+do_pca_summary <- function(data){
   
-  tmp <- data %>%
-    filter(problem == problem_name)
-  
-  sets <- unique(tmp$method)
+  the_sets <- unique(data$feature_set)
   storage <- list()
   
-  # Produce plots
+  # Iterate through each set
   
-  for(s in sets){
+  for(i in the_sets){
     
-    tmp1 <- tmp %>%
-      filter(method == s)
+    # Filter to set
     
-    myplot <- theft::plot_low_dimension(data = tmp1, is_normalised = FALSE, id_var = "id", group_var = "target", method = "z-score", plot = TRUE) +
-      labs(title = NULL,
-           subtitle = NULL,
-           caption = NULL) +
-      labs(title = s)
+    tmp <- data %>%
+      filter(feature_set == i)
     
-    storage[[s]] <- myplot
+    # Normalise
+    
+    tmp <- tmp %>%
+      dplyr::select(c(id, names, values)) %>%
+      tidyr::drop_na() %>%
+      dplyr::group_by(names) %>%
+      dplyr::mutate(values = normalise_feature_vector(values, method = "RobustSigmoid")) %>%
+      dplyr::ungroup() %>%
+      tidyr::drop_na()
+    
+    # Widen the matrix
+    
+    dat <- normed %>%
+      tidyr::pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+      tibble::column_to_rownames(var = "id")
+    
+    # Remove any columns with >50% NAs to prevent masses of rows getting dropped due to poor features
+    
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.5)]
+    
+    # Drop any remaining rows with NAs
+    
+    dat_filtered <- dat_filtered %>%
+      tidyr::drop_na()
+    
+    # Compute PCA
+    
+    fits <- dat_filtered %>%
+      stats::prcomp(scale = FALSE)
+    
+    eigens <- fits %>%
+      broom::tidy(matrix = "eigenvalues") %>%
+      dplyr::select(c(PC, percent))
+    
+    # Reshape from wide to long
+    
+    reshaped <- myresults %>%
+      pivot_longer(cols = 1:1, names_to = "pc")
+    
+    # Store output
+    
+    storage[[i]] <- reshaped
   }
   
-  # Merge into single graphic
-  
-  n <- length(storage)
-  ncols <- floor(sqrt(n))
-  
-  CairoPNG(paste0("output/lowdim_",problem_name,".png"), 800, 800)
-  do.call("grid.arrange", c(storage, ncol = ncols))
-  dev.off()
+  pc_results <- rbindlist(storage, use.names = TRUE)
+  return(pc_results)
 }
 
-# Produce plots for each problem
+# Run function
 
-problems <- unique(featureMatrix$problem)
+pca_results <- do_pca_summary(Emp1000FeatMat)
 
-for(p in problems){
-  do_pca(data = featureMatrix, problem_name = p)
-}
+#-------------- Produce summary graphic ----------------
+
+pca_results %>%
+  ggplot(aes(x = pc, y = var_expl, colour = feature_set)) +
+  geom_line() +
+  geom_point(size = 2.5) +
+  scale_colour_brewer(palette = "Dark2") +
+  labs() +
+  theme_bw() +
+  theme(legend.position = "bottom")
