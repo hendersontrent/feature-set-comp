@@ -30,11 +30,17 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
 calculate_feats_Emp1000 <- function(data){
   
+  message("Running catch22")
   try(outs_22 <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "catch22"))
+  message("Running feasts")
   try(outs_fe <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "feasts"))
+  message("Running tsfeatures")
   try(outs_ts <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfeatures"))
+  message("Running tsfresh")
   try(outs_tsfresh <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfresh", tsfresh_cleanup = FALSE))
+  message("Running TSFEL")
   try(outs_tsfel <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfel"))
+  message("Running Kats")
   try(outs_kats <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "kats"))
       
   # Bind all together
