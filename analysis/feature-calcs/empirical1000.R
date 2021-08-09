@@ -30,12 +30,12 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
 calculate_feats_Emp1000 <- function(data){
   
-  try(outs_22 <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "catch22"))
-  try(outs_fe <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "feasts"))
-  try(outs_ts <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfeatures"))
-  try(outs_tsfresh <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfresh", tsfresh_cleanup = FALSE))
-  try(outs_tsfel <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfel"))
-  try(outs_kats <- calculate_features(data = tmp, id_var = "Name", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "kats"))
+  try(outs_22 <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "catch22"))
+  try(outs_fe <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "feasts"))
+  try(outs_ts <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfeatures"))
+  try(outs_tsfresh <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfresh", tsfresh_cleanup = FALSE))
+  try(outs_tsfel <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfel"))
+  try(outs_kats <- calculate_features(data = data, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "kats"))
       
   # Bind all together
       
