@@ -42,3 +42,7 @@ vignettes/*.pdf
 
 data/*
 .Rda
+
+# Plots
+
+output/*
