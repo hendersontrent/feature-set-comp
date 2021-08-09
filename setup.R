@@ -15,13 +15,10 @@ library(tidyr)
 library(ggplot2)
 library(scales)
 library(foreign)
-library(Rcatch22)
-library(theft) # devtools::install_github("hendersontrent/theft")
+library(theft)
 library(Cairo)
 library(reticulate)
 library(gridExtra)
-library(Rtsne)
-library(umap)
 
 # Create important folders if none exist
 
