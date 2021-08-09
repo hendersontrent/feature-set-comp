@@ -13,7 +13,7 @@
 #' Function to automatically webscrape and process the Empirical 1000 datasets
 #' 
 #' 
-#' @return a dataframe with the datasets organised in a tidy way
+#' @return a dataframe with the datasets organised in a tidy format
 #' @author Trent Henderson
 #' 
 
