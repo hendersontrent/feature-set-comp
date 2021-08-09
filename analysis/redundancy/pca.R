@@ -94,9 +94,11 @@ pca_results <- do_pca_summary(Emp1000FeatMat)
 
 pca_results %>%
   ggplot(aes(x = pc, y = var_expl, colour = feature_set)) +
-  geom_line() +
+  geom_line(size = 0.9) +
   geom_point(size = 2.5) +
   scale_colour_brewer(palette = "Dark2") +
-  labs() +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(x = "Principal Component",
+       y = "Variance Explained (%)") +
   theme_bw() +
   theme(legend.position = "bottom")
