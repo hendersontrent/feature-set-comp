@@ -2,7 +2,7 @@
 # This script sets out to calculate
 # time-series features for each
 # classification problem and retain
-# them for classification use
+# them for analytical use
 #
 # NOTE: setup.R must be run first
 #------------------------------------
@@ -14,10 +14,6 @@
 # Read in data
 
 load("data/allProbs.Rda")
-
-# Load in helper functions until {theft} is fixed
-
-source("helpers/theft-helpers.R")
 
 # Fix Python environment
 

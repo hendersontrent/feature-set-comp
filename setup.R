@@ -24,5 +24,8 @@ library(gridExtra)
 
 if(!dir.exists('webscraping')) dir.create('webscraping')
 if(!dir.exists('analysis')) dir.create('analysis')
+if(!dir.exists('analysis/feature-calcs')) dir.create('analysis/feature-calcs')
+if(!dir.exists('analysis/classification')) dir.create('analysis/classification')
+if(!dir.exists('analysis/redundancy')) dir.create('analysis/redundancy')
 if(!dir.exists('output')) dir.create('output')
 if(!dir.exists('data')) dir.create('data')
