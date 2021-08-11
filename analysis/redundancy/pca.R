@@ -26,32 +26,34 @@ load("data/Emp1000FeatMat.Rda")
 
 do_pca_summary <- function(data){
   
-  the_sets <- unique(data$feature_set)
+  the_sets <- unique(data$method)
   storage <- list()
   
   # Iterate through each set
   
   for(i in the_sets){
     
+    tryCatch({
+    
     # Filter to set
     
     tmp <- data %>%
-      filter(feature_set == i)
+      filter(method == i)
     
     # Normalise
     
-    tmp <- tmp %>%
+    tmp2 <- tmp %>%
       dplyr::select(c(id, names, values)) %>%
-      tidyr::drop_na() %>%
-      dplyr::group_by(names) %>%
-      dplyr::mutate(values = normalise_feature_vector(values, method = "RobustSigmoid")) %>%
-      dplyr::ungroup() %>%
-      tidyr::drop_na()
+      drop_na() %>%
+      group_by(names) %>%
+      mutate(values = normalise_feature_vector(values, method = "RobustSigmoid")) %>%
+      ungroup() %>%
+      drop_na()
     
     # Widen the matrix
     
-    dat <- normed %>%
-      tidyr::pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+    dat <- tmp2 %>%
+      pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
       tibble::column_to_rownames(var = "id")
     
     # Remove any columns with >50% NAs to prevent masses of rows getting dropped due to poor features
@@ -61,25 +63,22 @@ do_pca_summary <- function(data){
     # Drop any remaining rows with NAs
     
     dat_filtered <- dat_filtered %>%
-      tidyr::drop_na()
+      drop_na()
     
     # Compute PCA
     
     fits <- dat_filtered %>%
-      stats::prcomp(scale = FALSE)
+      prcomp(scale = FALSE)
     
-    eigens <- fits %>%
-      broom::tidy(matrix = "eigenvalues") %>%
-      dplyr::select(c(PC, percent))
-    
-    # Reshape from wide to long
-    
-    reshaped <- myresults %>%
-      pivot_longer(cols = 1:1, names_to = "pc")
+    eigenvalues <- fits %>%
+      tidy(matrix = "eigenvalues") %>%
+      dplyr::select(c(PC, percent)) %>%
+      mutate(feature_set = i)
     
     # Store output
     
-    storage[[i]] <- reshaped
+    storage[[i]] <- eigenvalues
+    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
   pc_results <- rbindlist(storage, use.names = TRUE)
@@ -92,13 +91,17 @@ pca_results <- do_pca_summary(Emp1000FeatMat)
 
 #-------------- Produce summary graphic ----------------
 
-pca_results %>%
-  ggplot(aes(x = pc, y = var_expl, colour = feature_set)) +
-  geom_line(size = 0.9) +
-  geom_point(size = 2.5) +
+p <- pca_results %>%
+  ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
+  geom_line(size = 0.7) +
+  geom_point(size = 1.5) +
   scale_colour_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
   labs(x = "Principal Component",
-       y = "Variance Explained (%)") +
+       y = "Variance Explained (%)",
+       colour = NULL) +
   theme_bw() +
   theme(legend.position = "bottom")
+
+print(p)
+ggsave("output/pca.png", p)

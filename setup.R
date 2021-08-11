@@ -10,6 +10,7 @@
 
 library(data.table)
 library(dplyr)
+library(tibble)
 library(magrittr)
 library(tidyr)
 library(ggplot2)
@@ -18,7 +19,7 @@ library(foreign)
 library(theft)
 library(Cairo)
 library(reticulate)
-library(gridExtra)
+library(broom)
 
 # Create important folders if none exist
 
