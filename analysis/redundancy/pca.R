@@ -117,7 +117,7 @@ p1 <- pca_results %>%
   scale_colour_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
   labs(x = "Principal Component",
-       y = "Variance Explained (%)",
+       y = "Cumulative Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
   theme(legend.position = "bottom")
