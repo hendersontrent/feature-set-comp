@@ -82,11 +82,17 @@ do_pca_summary <- function(data){
   return(pc_results)
 }
 
-# Run function
+# Run function and compute cumulative sum for later
 
-pca_results <- do_pca_summary(Emp1000FeatMat)
+pca_results <- do_pca_summary(Emp1000FeatMat) %>%
+  group_by(feature_set) %>%
+  arrange(PC) %>%
+  mutate(cs = cumsum(percent)) %>%
+  ungroup()
 
 #-------------- Produce summary graphic ----------------
+
+# Regular
 
 p <- pca_results %>%
   ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
@@ -101,4 +107,24 @@ p <- pca_results %>%
   theme(legend.position = "bottom")
 
 print(p)
+
+# Cumulative sum
+
+p1 <- pca_results %>%
+  ggplot(aes(x = PC, y = (cs*100), colour = feature_set)) +
+  geom_line() +
+  geom_point() +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(x = "Principal Component",
+       y = "Variance Explained (%)",
+       colour = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+print(p1)
+
+# Save plots
+
 ggsave("output/pca.png", p)
+ggsave("output/pca-cumsum.png", p1)
