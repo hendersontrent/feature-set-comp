@@ -35,15 +35,12 @@ do_pca_summary <- function(data){
     
     tryCatch({
     
-    # Filter to set
+    # Filter to set and normalise
     
     tmp <- data %>%
-      filter(method == i)
-    
-    # Normalise
-    
-    tmp2 <- tmp %>%
+      filter(method == i) %>%
       dplyr::select(c(id, names, values)) %>%
+      distinct() %>%
       drop_na() %>%
       group_by(names) %>%
       mutate(values = normalise_feature_vector(values, method = "RobustSigmoid")) %>%
@@ -52,7 +49,7 @@ do_pca_summary <- function(data){
     
     # Widen the matrix
     
-    dat <- tmp2 %>%
+    dat <- tmp %>%
       pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
       tibble::column_to_rownames(var = "id")
     
@@ -93,8 +90,8 @@ pca_results <- do_pca_summary(Emp1000FeatMat)
 
 p <- pca_results %>%
   ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
-  geom_line(size = 0.7) +
-  geom_point(size = 1.5) +
+  geom_line() +
+  geom_point() +
   scale_colour_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
   labs(x = "Principal Component",
