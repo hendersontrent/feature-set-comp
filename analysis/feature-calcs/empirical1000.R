@@ -23,10 +23,10 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
 outs_22 <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "catch22")
 
-#--------------------------
-# Do the others in TryCatch
-# loops as errors arise
-#--------------------------
+#--------------------------------
+# Do the others in TryCatch loops
+# as errors arise otherwise
+#--------------------------------
 
 #' Function to loop through unique IDs and compute features
 #' 
