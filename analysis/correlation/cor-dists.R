@@ -49,6 +49,7 @@ for(i in the_sets){
   Kats <- subset(tmp_not_i, method == "Kats")
   tsfresh <- subset(tmp_not_i, method == "tsfresh")
   TSFEL <- subset(tmp_not_i, method == "TSFEL")
+  hctsa <- subset(tmp_not_i, method == "hctsa")
   
   catch22 <- catch22$id
   feasts <- feasts$id
@@ -56,9 +57,10 @@ for(i in the_sets){
   Kats <- Kats$id
   tsfresh <- tsfresh$id
   TSFEL <- TSFEL$id
+  hctsa <- hctsa$id
   
   tst <- c(unique(catch22), unique(feasts), unique(tsfeatures), 
-           unique(Kats),unique(tsfresh),unique(TSFEL))
+           unique(Kats), unique(tsfresh), unique(TSFEL), unique(hctsa))
   
   tst <- tst[duplicated(tst)]
   

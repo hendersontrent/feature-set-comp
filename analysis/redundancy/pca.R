@@ -24,15 +24,80 @@ hctsa <- pull_hctsa_results()
 
 fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
-# Cleanup env as files as big
+# Clean up environment as files are big
 
 rm(Emp1000FeatMat, hctsa)
 
-#-------------- Check feature quality ------------------
+#-------------- Preliminary calculations----------------
 
-# Total number of features by feature set and dataset
+#------------------------
+# Retain only datasets on 
+# which all feature sets 
+# successfully completed
+#------------------------
 
-num_feats <- fullFeatMat %>%
+#' Function to find datasets that successfully computed
+#' 
+#' @param the_set the feature set to focus on
+#' @return an object of class vector
+#' @author Trent Henderson
+#' 
+
+get_computed_ids <- function(the_set){
+  
+  tmp <- fullFeatMat %>%
+    filter(method == the_set) %>%
+    drop_na() %>%
+    dplyr::select(c(id)) %>%
+    distinct() %>%
+    pull()
+  
+  return(tmp)
+}
+
+#' Function to retain only the consistent time series across feature sets
+#' 
+#' @return an object of class vector
+#' @author Trent Henderson
+#' 
+
+get_consistent_datasets <- function(){
+  
+  catch22 <- get_computed_ids(the_set = "catch22")
+  feasts <- get_computed_ids(the_set = "feasts")
+  tsfeatures <- get_computed_ids(the_set = "tsfeatures")
+  Kats <- get_computed_ids(the_set = "Kats")
+  tsfresh <- get_computed_ids(the_set = "tsfresh")
+  TSFEL <- get_computed_ids(the_set = "TSFEL")
+  hctsa <- get_computed_ids(the_set = "hctsa")
+  
+  tst <- c(catch22, feasts, tsfeatures, Kats, tsfresh, TSFEL, hctsa)
+  
+  tst <- intersect(catch22, feasts)
+  tst <- intersect(tst, tsfeatures)
+  tst <- intersect(tst, Kats)
+  tst <- intersect(tst, tsfresh)
+  tst <- intersect(tst, TSFEL)
+  tst <- intersect(tst, hctsa)
+  
+  return(tst)
+}
+
+good_datasets <- get_consistent_datasets()
+
+fullFeatMat_filt <- fullFeatMat %>%
+  filter(id %in% good_datasets)
+
+# Clean up environment
+
+rm(fullFeatMat)
+
+#---------------------------
+# Total number of features 
+# by feature set and dataset
+#---------------------------
+
+num_feats <- fullFeatMat_filt %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%
@@ -116,7 +181,7 @@ do_pca_summary <- function(dataset){
 
 # Run function and compute cumulative sum for later
 
-pca_results <- do_pca_summary(fullFeatMat) %>%
+pca_results <- do_pca_summary(fullFeatMat_filt) %>%
   group_by(feature_set) %>%
   arrange(PC) %>%
   mutate(cs = cumsum(percent)) %>%
