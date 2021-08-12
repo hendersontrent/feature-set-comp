@@ -135,7 +135,7 @@ p2 <- pca_results %>%
   geom_point() +
   scale_colour_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "Principal Component",
+  labs(x = "Principal Component / Total Number of Components",
        y = "Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
