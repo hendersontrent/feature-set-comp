@@ -14,6 +14,37 @@
 
 load("data/Emp1000FeatMat.Rda")
 
-#-------------- XXX ------------------
+# Filter data to unique entries
+
+tmp <- Emp1000FeatMat %>%
+  dplyr::select(c(id, names, method, values)) %>%
+  distinct() %>%
+  drop_na()
+
+#-------------- Compute correlations ----------------
+
+# Compute all pairwise correlations between a feature and every other feature
+# included in all other sets
+
+storage <- list()
+the_sets <- unique(tmp$method)
+
+for(i in the_sets){
+  
+  tmp_i <- tmp %>%
+    filter(method == i)
+  
+  tmp_not_i <- tmp %>%
+    filter(method != i)
+  
+}
+
+#-------------- Generate data vis -------------------
+
+# Plot distribution of correlations
+
+
+
+# SPlot summary matrix of maximum correlations between feature sets
 
 

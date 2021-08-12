@@ -46,3 +46,7 @@ data/*
 # Plots
 
 output/*
+
+# Mac OS
+
+.DS_Store
