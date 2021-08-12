@@ -111,12 +111,22 @@ do_pca_summary <- function(dataset){
     
     dat <- tmp %>%
       pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
-      tibble::column_to_rownames(var = "id") %>%
+      tibble::column_to_rownames(var = "id")
+    
+    if(i == "hctsa"){
+      dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.9999)]
+    } else{
+      dat_filtered <- dat
+    }
+    
+    # Filter final NAs
+    
+    dat_filtered <- dat_filtered %>%
       drop_na()
     
     # Compute PCA
     
-    fits <- dat %>%
+    fits <- dat_filtered %>%
       prcomp(scale = FALSE)
     
     eigenvalues <- fits %>%
