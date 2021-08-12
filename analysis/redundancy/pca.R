@@ -124,7 +124,45 @@ p1 <- pca_results %>%
 
 print(p1)
 
+# Scaled by number of features
+
+p2 <- pca_results %>%
+  group_by(feature_set) %>%
+  mutate(PC = PC/sum(PC)) %>%
+  ungroup() %>%
+  ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
+  geom_line() +
+  geom_point() +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(x = "Principal Component",
+       y = "Variance Explained (%)",
+       colour = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+print(p2)
+
+p3 <- pca_results %>%
+  group_by(feature_set) %>%
+  mutate(PC = PC/sum(PC)) %>%
+  ungroup() %>%
+  ggplot(aes(x = PC, y = (cs*100), colour = feature_set)) +
+  geom_line() +
+  geom_point() +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  labs(x = "Principal Component / Total Number of Components",
+       y = "Cumulative Variance Explained (%)",
+       colour = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+print(p3)
+
 # Save plots
 
 ggsave("output/pca.png", p)
 ggsave("output/pca-cumsum.png", p1)
+ggsave("output/pca-scaled.png", p2)
+ggsave("output/pca-cumsum-scaled.png", p3)
