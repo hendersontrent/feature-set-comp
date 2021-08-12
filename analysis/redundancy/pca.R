@@ -15,18 +15,31 @@
 
 load("data/Emp1000FeatMat.Rda")
 
+#-------------- Check feature quality ------------------
+
+# Total number of features by feature set and dataset
+
+num_feats <- Emp1000FeatMat %>%
+  dplyr::select(c(id, names, method)) %>%
+  distinct() %>%
+  group_by(id, names, method) %>%
+  summarise(counter = n()) %>%
+  ungroup() %>%
+  dplyr::select(c(names, method)) %>%
+  distinct()
+
 #-------------- Do PCA for each feature set ------------
 
 #' Function to produce PCA on each Dataset x Feature matrix and bind results
 #' 
-#' @param data the Dataset x Feature matrix dataframe
+#' @param dataset the Dataset x Feature matrix dataframe
 #' @return a dataframe containing PC results
 #' @author Trent Henderson
 #' 
 
-do_pca_summary <- function(data){
+do_pca_summary <- function(dataset){
   
-  the_sets <- unique(data$method)
+  the_sets <- unique(dataset$method)
   storage <- list()
   
   # Iterate through each set
@@ -35,15 +48,29 @@ do_pca_summary <- function(data){
     
     tryCatch({
     
-    # Filter to set and normalise
+    # Filter to set
     
-    tmp <- data %>%
+    tmp <- dataset %>%
       filter(method == i) %>%
       dplyr::select(c(id, names, values)) %>%
       distinct() %>%
-      drop_na() %>%
+      drop_na()
+    
+    # Remove features that didn't calculate on all datasets
+    
+    feat_list <- num_feats %>%
+      filter(method == i) %>%
+      dplyr::select(c(names)) %>%
+      pull()
+    
+    tmp <- tmp %>%
+      filter(names %in% feat_list)
+    
+    # Normalise features
+    
+    tmp <- tmp %>%
       group_by(names) %>%
-      mutate(values = normalise_feature_vector(values, method = "RobustSigmoid")) %>%
+      mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
       ungroup() %>%
       drop_na()
     
@@ -51,20 +78,12 @@ do_pca_summary <- function(data){
     
     dat <- tmp %>%
       pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
-      tibble::column_to_rownames(var = "id")
-    
-    # Remove any columns with >50% NAs to prevent masses of rows getting dropped due to poor features
-    
-    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.5)]
-    
-    # Drop any remaining rows with NAs
-    
-    dat_filtered <- dat_filtered %>%
+      tibble::column_to_rownames(var = "id") %>%
       drop_na()
     
     # Compute PCA
     
-    fits <- dat_filtered %>%
+    fits <- dat %>%
       prcomp(scale = FALSE)
     
     eigenvalues <- fits %>%
@@ -128,14 +147,15 @@ print(p1)
 
 p2 <- pca_results %>%
   group_by(feature_set) %>%
-  mutate(PC = PC/sum(PC)) %>%
+  mutate(PC = PC/max(PC)) %>%
   ungroup() %>%
-  ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
+  ggplot(aes(x = (PC*100), y = (percent*100), colour = feature_set)) +
   geom_line() +
   geom_point() +
   scale_colour_brewer(palette = "Dark2") +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "Principal Component / Total Number of Components",
+  labs(x = "% of Principal Components",
        y = "Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
@@ -145,14 +165,15 @@ print(p2)
 
 p3 <- pca_results %>%
   group_by(feature_set) %>%
-  mutate(PC = PC/sum(PC)) %>%
+  mutate(PC = PC/max(PC)) %>%
   ungroup() %>%
-  ggplot(aes(x = PC, y = (cs*100), colour = feature_set)) +
+  ggplot(aes(x = (PC*100), y = (cs*100), colour = feature_set)) +
   geom_line() +
   geom_point() +
   scale_colour_brewer(palette = "Dark2") +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "Principal Component / Total Number of Components",
+  labs(x = "% of Principal Components",
        y = "Cumulative Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
