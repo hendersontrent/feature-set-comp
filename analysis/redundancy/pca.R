@@ -15,6 +15,15 @@
 
 load("data/Emp1000FeatMat.Rda")
 
+# Load hctsa results
+
+source("webscraping/pull_hctsa_results.R")
+hctsa <- pull_hctsa_results()
+
+# Merge together
+
+fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
+
 #-------------- Check feature quality ------------------
 
 # Total number of features by feature set and dataset

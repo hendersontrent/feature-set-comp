@@ -18,7 +18,7 @@ pull_hctsa_results <- function(){
   
   message("Downloading data... This may take a long time.")
   
-  # --------------- Webscrape the data ------------
+  #--------------- Webscrape the data ------------
   
   #--------------------
   # PART I: DATA MATRIX
@@ -26,7 +26,12 @@ pull_hctsa_results <- function(){
   
   temp <- tempfile()
   download.file("https://ndownloader.figshare.com/files/29061867", temp, mode = "wb")
-  data_matrix <- readr::read_csv(temp, col_names = FALSE)
+  
+  data_matrix <- readr::read_csv(temp, col_names = FALSE) %>%
+    mutate(id = row_number()) %>%
+    pivot_longer(cols = 1:7730, names_to = "names_id", values_to = "values") %>%
+    mutate(names_id = gsub("X", "\\1", names_id),
+           names_id = as.numeric(names_id))
   
   #-------------
   # PART II: IDs
@@ -34,7 +39,10 @@ pull_hctsa_results <- function(){
   
   temp2 <- tempfile()
   download.file("https://ndownloader.figshare.com/files/29061879", temp2, mode = "wb")
-  ids <- readr::read_csv(temp2, col_names = FALSE)
+  
+  ids <- readr::read_csv(temp2, col_names = TRUE) %>%
+    dplyr::select(c(ID, Keywords)) %>%
+    rename(group = Keywords)
   
   #-------------------
   # PART III: FEATURES
@@ -42,10 +50,18 @@ pull_hctsa_results <- function(){
   
   temp3 <- tempfile()
   download.file("https://ndownloader.figshare.com/files/29061870", temp3, mode = "wb")
-  features <- readr::read_csv(temp3, col_names = FALSE)
   
-  # Merge all together
+  features <- readr::read_csv(temp3, col_names = TRUE) %>%
+    dplyr::select(c(ID, CodeString)) %>%
+    rename(names = CodeString)
   
+  #--------------- Merge all together ------------
   
+  featMat <- data_matrix %>%
+    left_join(ids, by = c("id" = "ID")) %>%
+    left_join(features, by = c("names_id" = "ID")) %>%
+    dplyr::select(-c(names_id)) %>%
+    mutate(method = "hctsa")
   
+  return(featMat)
 }
