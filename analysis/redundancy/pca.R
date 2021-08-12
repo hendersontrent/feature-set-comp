@@ -18,17 +18,41 @@ load("data/Emp1000FeatMat.Rda")
 # Load hctsa results
 
 source("webscraping/pull_hctsa_results.R")
-hctsa <- pull_hctsa_results()
+hctsa <- pull_hctsa_results() 
 
 # Merge together
 
 fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
-#-------------- Check feature quality ------------------
+# Clean up environment as files are big
 
-# Total number of features by feature set and dataset
+rm(Emp1000FeatMat, hctsa)
 
-num_feats <- Emp1000FeatMat %>%
+#-------------- Preliminary calculations----------------
+
+#------------------------
+# Retain only datasets on 
+# which all feature sets 
+# successfully computed
+#------------------------
+
+source("R/utility_functions.R")
+
+good_datasets <- get_consistent_datasets()
+
+fullFeatMat_filt <- fullFeatMat %>%
+  filter(id %in% good_datasets)
+
+# Clean up environment
+
+rm(fullFeatMat)
+
+#---------------------------
+# Total number of features 
+# by feature set and dataset
+#---------------------------
+
+num_feats <- fullFeatMat_filt %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%
@@ -112,7 +136,7 @@ do_pca_summary <- function(dataset){
 
 # Run function and compute cumulative sum for later
 
-pca_results <- do_pca_summary(Emp1000FeatMat) %>%
+pca_results <- do_pca_summary(fullFeatMat_filt) %>%
   group_by(feature_set) %>%
   arrange(PC) %>%
   mutate(cs = cumsum(percent)) %>%
@@ -120,41 +144,9 @@ pca_results <- do_pca_summary(Emp1000FeatMat) %>%
 
 #-------------- Produce summary graphic ----------------
 
-# Regular
-
-p <- pca_results %>%
-  ggplot(aes(x = PC, y = (percent*100), colour = feature_set)) +
-  geom_line() +
-  geom_point() +
-  scale_colour_brewer(palette = "Dark2") +
-  scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "Principal Component",
-       y = "Variance Explained (%)",
-       colour = NULL) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-print(p)
-
-# Cumulative sum
-
-p1 <- pca_results %>%
-  ggplot(aes(x = PC, y = (cs*100), colour = feature_set)) +
-  geom_line() +
-  geom_point() +
-  scale_colour_brewer(palette = "Dark2") +
-  scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "Principal Component",
-       y = "Cumulative Variance Explained (%)",
-       colour = NULL) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-print(p1)
-
 # Scaled by number of features
 
-p2 <- pca_results %>%
+p <- pca_results %>%
   group_by(feature_set) %>%
   mutate(PC = PC/max(PC)) %>%
   ungroup() %>%
@@ -170,9 +162,9 @@ p2 <- pca_results %>%
   theme_bw() +
   theme(legend.position = "bottom")
 
-print(p2)
+print(p)
 
-p3 <- pca_results %>%
+p1 <- pca_results %>%
   group_by(feature_set) %>%
   mutate(PC = PC/max(PC)) %>%
   ungroup() %>%
@@ -188,11 +180,9 @@ p3 <- pca_results %>%
   theme_bw() +
   theme(legend.position = "bottom")
 
-print(p3)
+print(p1)
 
 # Save plots
 
-ggsave("output/pca.png", p)
-ggsave("output/pca-cumsum.png", p1)
-ggsave("output/pca-scaled.png", p2)
-ggsave("output/pca-cumsum-scaled.png", p3)
+ggsave("output/pca-scaled.png", p)
+ggsave("output/pca-cumsum-scaled.png", p1)
