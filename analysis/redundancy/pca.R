@@ -33,7 +33,7 @@ rm(Emp1000FeatMat, hctsa)
 #------------------------
 # Retain only datasets on 
 # which all feature sets 
-# successfully completed
+# successfully computed
 #------------------------
 
 source("R/utility_functions.R")
