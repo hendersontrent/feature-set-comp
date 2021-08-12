@@ -18,7 +18,8 @@ load("data/Emp1000FeatMat.Rda")
 # Load hctsa results
 
 source("webscraping/pull_hctsa_results.R")
-hctsa <- pull_hctsa_results()
+
+hctsa <- pull_hctsa_results() 
 
 # Merge together
 
@@ -28,7 +29,7 @@ fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
 # Total number of features by feature set and dataset
 
-num_feats <- Emp1000FeatMat %>%
+num_feats <- fullFeatMat %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%

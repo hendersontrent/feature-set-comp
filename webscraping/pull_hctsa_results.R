@@ -61,7 +61,8 @@ pull_hctsa_results <- function(){
     left_join(ids, by = c("id" = "ID")) %>%
     left_join(features, by = c("names_id" = "ID")) %>%
     dplyr::select(-c(names_id)) %>%
-    mutate(method = "hctsa")
+    mutate(method = "hctsa") %>%
+    mutate(id = as.character(id))
   
   return(featMat)
 }
