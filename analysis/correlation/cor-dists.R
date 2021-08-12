@@ -21,8 +21,21 @@ tmp <- Emp1000FeatMat %>%
   distinct() %>%
   drop_na()
 
-normed <- normalise_feature_frame(tmp, names_var = "names", values_var = "values",
+# Retain only datasets on which all feature sets successfully computed
+
+source("R/utility_functions.R")
+
+good_datasets <- get_consistent_datasets()
+
+fullFeatMat_filt <- fullFeatMat %>%
+  filter(id %in% good_datasets)
+
+normed <- normalise_feature_frame(fullFeatMat_filt, names_var = "names", values_var = "values",
                                   method = "z-score")
+
+# Clean up environment
+
+rm(fullFeatMat, fullFeatMat_filt)
 
 #-------------- Compute correlations ----------------
 
@@ -40,35 +53,7 @@ for(i in the_sets){
   
   tmp_not_i <- normed %>%
     filter(method != i) %>%
-    filter(id %in% unique(tmp_i$id)) %>% # Filter to just datasets that computed for i
     drop_na()
-  
-  catch22 <- subset(tmp_not_i, method == "catch22")
-  feasts <- subset(tmp_not_i, method == "feasts")
-  tsfeatures <- subset(tmp_not_i, method == "tsfeatures")
-  Kats <- subset(tmp_not_i, method == "Kats")
-  tsfresh <- subset(tmp_not_i, method == "tsfresh")
-  TSFEL <- subset(tmp_not_i, method == "TSFEL")
-  hctsa <- subset(tmp_not_i, method == "hctsa")
-  
-  catch22 <- catch22$id
-  feasts <- feasts$id
-  tsfeatures <- tsfeatures$id
-  Kats <- Kats$id
-  tsfresh <- tsfresh$id
-  TSFEL <- TSFEL$id
-  hctsa <- hctsa$id
-  
-  tst <- c(unique(catch22), unique(feasts), unique(tsfeatures), 
-           unique(Kats), unique(tsfresh), unique(TSFEL), unique(hctsa))
-  
-  tst <- tst[duplicated(tst)]
-  
-  tmp_i <- tmp_i %>%
-    filter(id %in% unique(tst)) # Filter to just datasets that computed for not i
-  
-  tmp_not_i <- tmp_not_i %>%
-    filter(id %in% unique(tst))
   
   # Loop through each feature in set i and get correlations
   
