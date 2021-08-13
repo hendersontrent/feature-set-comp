@@ -14,12 +14,14 @@
 
 load("data/Emp1000FeatMat.Rda")
 
-# Filter data to unique entries and normalise
+# Load hctsa results
 
-tmp <- Emp1000FeatMat %>%
-  dplyr::select(c(id, names, method, values)) %>%
-  distinct() %>%
-  drop_na()
+source("webscraping/pull_hctsa_results.R")
+hctsa <- pull_hctsa_results() 
+
+# Merge together
+
+fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
 # Retain only datasets on which all feature sets successfully computed
 
@@ -35,7 +37,7 @@ normed <- normalise_feature_frame(fullFeatMat_filt, names_var = "names", values_
 
 # Clean up environment
 
-rm(fullFeatMat, fullFeatMat_filt)
+rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt)
 
 #-------------- Compute correlations ----------------
 

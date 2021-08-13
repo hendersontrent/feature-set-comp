@@ -53,3 +53,38 @@ get_consistent_datasets <- function(){
   
   return(tst)
 }
+
+#' Function to retain only the consistent time series across individual features
+#' 
+#' @return an object of class list
+#' @author Trent Henderson
+#' 
+
+get_consistent_datasets_feats <- function(){
+  
+  message("Cycling through individual features. This will take a while.")
+  
+  tmp <- normed %>%
+    mutate(comb_id = paste0(method,"_",names)) # Preps for duplicate names across sets
+  
+  feats <- unique(tmp$comb_id)
+  storage <- list()
+  
+  for(f in feats){
+    
+    tmp2 <- tmp %>%
+      filter(comb_id == f) %>%
+      dplyr::select(c(id)) %>%
+      pull()
+    
+    storage[[f]] <- tmp
+  }
+  
+  the_list <- intersect(storage[2], storage[1])
+  
+  for(n in 3:length(storage)){
+    the_list <- intersect(the_list, storage[n])
+  }
+  
+  return(thelist)
+}
