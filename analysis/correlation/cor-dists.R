@@ -83,13 +83,3 @@ return_cor_mat(normed, "Kats", "hctsa", store = TRUE, store_to = "/Users/trenthe
 return_cor_mat(normed, "tsfresh", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/19.Rda")
 return_cor_mat(normed, "tsfresh", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/20.Rda")
 return_cor_mat(normed, "TSFEL", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/21.Rda")
-
-#-------------- Generate data vis -------------------
-
-# Plot distribution of correlations
-
-
-
-# Plot summary matrix of maximum correlations between feature sets
-
-
