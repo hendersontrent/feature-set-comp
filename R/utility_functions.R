@@ -77,7 +77,7 @@ get_consistent_datasets_feats <- function(){
       dplyr::select(c(id)) %>%
       pull()
     
-    storage[[f]] <- tmp
+    storage[[f]] <- tmp2
   }
   
   the_list <- intersect(storage[2], storage[1])
