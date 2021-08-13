@@ -52,74 +52,41 @@ rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
 
 #-------------- Compute correlations ----------------
 
-#' Compute all pairwise correlations between a feature and every other feature
-#' included in all other sets
-#' 
-#' @param dataset the dataframe containing normalised feature matrices
-#' @return an object of class list
-#' @author Trent Henderson
-#' 
+# Preps for duplicate feature names across sets
 
-get_pairwise_correlations <- function(dataset){
-  
-  tmp <- dataset %>%
-    mutate(comb_id = paste0(method,"_",names)) # Preps for duplicate names across sets
-  
-  storage <- list()
-  the_sets <- unique(tmp$method)
-  
-  for(i in the_sets){
-    
-    message(paste0("Computing correlations for: ",i))
-    
-    tmp_i <- tmp %>%
-      filter(method == i) %>%
-      drop_na()
-    
-    tmp_not_i <- tmp %>%
-      filter(method != i) %>%
-      drop_na()
-    
-    # Loop through each feature in set i and get correlations
-    
-    feats <- unique(tmp_i$comb_id)
-    storage2 <- list()
-    
-    for(f in feats){
-      
-      val <- tmp_i %>%
-        filter(comb_id == f) %>%
-        dplyr::select(values) %>%
-        pull()
-      
-      other_vals <- tmp_not_i %>%
-        dplyr::select(c(id, comb_id, values)) %>%
-        pivot_wider(id_cols = id, names_from = comb_id, values_from = values)
-      
-      ncols <- ncol(other_vals)
-      storage3 <- list()
-      
-      for(n in 2:ncols){
-        
-        thename <- colnames(other_vals[,n])
-        
-        cors <- data.frame(names_1 = f,
-                           names_2 = thename,
-                           values = cor(val, other_vals[,n])[1])
-        
-        storage3[[n]] <- cors
-      }
-      
-      corMat <- rbindlist(storage3, use.names = TRUE)
-      storage2[[f]] <- corMat
-    }
-    
-    storage[[i]] <- storage2
-  }
-  return(storage)
-}
+normed <- normed %>%
+  mutate(comb_id = paste0(method,"_",names))
 
-pairwise_cors <- get_pairwise_correlations(dataset = normed)
+# Get a matrix of pairwise combinations of features
+
+mat1 <- return_cor_mat(normed, "catch22", "feasts")
+mat2 <- return_cor_mat(normed, "catch22", "tsfeatures")
+mat3 <- return_cor_mat(normed, "catch22", "Kats")
+mat4 <- return_cor_mat(normed, "catch22", "tsfresh")
+mat6 <- return_cor_mat(normed, "catch22", "TSFEL")
+mat7 <- return_cor_mat(normed, "catch22", "hctsa")
+mat8 <- return_cor_mat(normed, "feasts", "tsfeatures")
+mat9 <- return_cor_mat(normed, "feasts", "Kats")
+mat10 <- return_cor_mat(normed, "feasts", "tsfresh")
+mat11 <- return_cor_mat(normed, "feasts", "TSFEL")
+mat12 <- return_cor_mat(normed, "feasts", "hctsa")
+mat13 <- return_cor_mat(normed, "tsfeatures", "Kats")
+mat14 <- return_cor_mat(normed, "tsfeatures", "tsfresh")
+mat15 <- return_cor_mat(normed, "tsfeatures", "TSFEL")
+mat16 <- return_cor_mat(normed, "tsfeatures", "hctsa")
+mat17 <- return_cor_mat(normed, "Kats", "tsfresh")
+mat18 <- return_cor_mat(normed, "Kats", "TSFEL")
+mat19 <- return_cor_mat(normed, "Kats", "hctsa")
+mat20 <- return_cor_mat(normed, "tsfresh", "TSFEL")
+mat21 <- return_cor_mat(normed, "tsfresh", "hctsa")
+mat22 <- return_cor_mat(normed, "TSFEL", "hctsa")
+
+# Compute correlation for each pairwise combination
+
+
+
+corMat <- sapply(mat1, function(x) sapply(mat1, function(y) compute_pairwise_cor(x,y)))
+
 
 #-------------- Generate data vis -------------------
 
