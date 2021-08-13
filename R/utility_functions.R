@@ -56,15 +56,16 @@ get_consistent_datasets <- function(){
 
 #' Function to retain only the consistent time series across individual features
 #' 
-#' @return an object of class list
+#' @param dataset the dataset containing time series feature data
+#' @return an object of class vector
 #' @author Trent Henderson
 #' 
 
-get_consistent_datasets_feats <- function(){
+get_consistent_datasets_feats <- function(dataset){
   
   message("Cycling through individual features. This will take a while.")
   
-  tmp <- normed %>%
+  tmp <- dataset %>%
     mutate(comb_id = paste0(method,"_",names)) # Preps for duplicate names across sets
   
   feats <- unique(tmp$comb_id)
@@ -89,5 +90,5 @@ get_consistent_datasets_feats <- function(){
     }
   }
   
-  return(thelist)
+  return(the_list)
 }
