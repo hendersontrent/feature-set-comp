@@ -14,98 +14,91 @@
 
 load("data/Emp1000FeatMat.Rda")
 
-# Filter data to unique entries and normalise
+# Load hctsa results
 
-tmp <- Emp1000FeatMat %>%
+source("webscraping/pull_hctsa_results.R")
+hctsa <- pull_hctsa_results() 
+
+# Merge together and remove erroneous duplicates
+
+fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa) %>%
   dplyr::select(c(id, names, method, values)) %>%
-  distinct() %>%
-  drop_na()
+  distinct()
 
-normed <- normalise_feature_frame(tmp, names_var = "names", values_var = "values",
+# Retain only datasets on which all feature sets successfully computed
+
+source("R/utility_functions.R")
+
+good_datasets <- get_consistent_datasets()
+
+fullFeatMat_filt <- fullFeatMat %>%
+  filter(id %in% good_datasets)
+
+# Filter to only datasets that every individual feature computed on
+
+good_ind_datasets <- get_consistent_datasets_feats(fullFeatMat_filt)
+
+fullFeatMat_filt2 <- fullFeatMat_filt %>%
+  filter(id %in% good_ind_datasets)
+
+# Normalise features
+
+normed <- normalise_feature_frame(fullFeatMat_filt2, names_var = "names", values_var = "values",
                                   method = "z-score")
+
+# Clean up environment
+
+rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
 
 #-------------- Compute correlations ----------------
 
-# Compute all pairwise correlations between a feature and every other feature
-# included in all other sets
+# Preps for duplicate feature names across sets
 
-storage <- list()
-the_sets <- unique(normed$method)
+normed <- normed %>%
+  mutate(comb_id = paste0(method,"_",names))
 
-for(i in the_sets){
+# Get a matrix of pairwise combinations of features in a function to avoid
+# cluttering environment
+
+#' Function to get results and merge together
+#' 
+#' @return an object of class dataframe
+#' @author Trent Henderson
+#' 
+
+retrieve_results <- function(){
   
-  tmp_i <- normed %>%
-    filter(method == i) %>%
-    drop_na()
+  mat1 <- return_cor_mat(normed, "catch22", "feasts")
+  mat2 <- return_cor_mat(normed, "catch22", "tsfeatures")
+  mat3 <- return_cor_mat(normed, "catch22", "Kats")
+  mat4 <- return_cor_mat(normed, "catch22", "tsfresh")
+  mat6 <- return_cor_mat(normed, "catch22", "TSFEL")
+  mat7 <- return_cor_mat(normed, "catch22", "hctsa")
+  mat8 <- return_cor_mat(normed, "feasts", "tsfeatures")
+  mat9 <- return_cor_mat(normed, "feasts", "Kats")
+  mat10 <- return_cor_mat(normed, "feasts", "tsfresh")
+  mat11 <- return_cor_mat(normed, "feasts", "TSFEL")
+  mat12 <- return_cor_mat(normed, "feasts", "hctsa")
+  mat13 <- return_cor_mat(normed, "tsfeatures", "Kats")
+  mat14 <- return_cor_mat(normed, "tsfeatures", "tsfresh")
+  mat15 <- return_cor_mat(normed, "tsfeatures", "TSFEL")
+  mat16 <- return_cor_mat(normed, "tsfeatures", "hctsa")
+  mat17 <- return_cor_mat(normed, "Kats", "tsfresh")
+  mat18 <- return_cor_mat(normed, "Kats", "TSFEL")
+  mat19 <- return_cor_mat(normed, "Kats", "hctsa")
+  mat20 <- return_cor_mat(normed, "tsfresh", "TSFEL")
+  mat21 <- return_cor_mat(normed, "tsfresh", "hctsa")
+  mat22 <- return_cor_mat(normed, "TSFEL", "hctsa")
   
-  tmp_not_i <- normed %>%
-    filter(method != i) %>%
-    filter(id %in% unique(tmp_i$id)) %>% # Filter to just datasets that computed for i
-    drop_na()
+  myResults <- bind_rows(mat1, mat2, mat3, mat4, mat5, mat6,
+                         mat7, mat8, mat9, mat10, mat11, mat12,
+                         mat13, mat14, mat15, mat16, mat17, mat18,
+                         mat19, mat20, mat21, mat22)
   
-  catch22 <- subset(tmp_not_i, method == "catch22")
-  feasts <- subset(tmp_not_i, method == "feasts")
-  tsfeatures <- subset(tmp_not_i, method == "tsfeatures")
-  Kats <- subset(tmp_not_i, method == "Kats")
-  tsfresh <- subset(tmp_not_i, method == "tsfresh")
-  TSFEL <- subset(tmp_not_i, method == "TSFEL")
-  hctsa <- subset(tmp_not_i, method == "hctsa")
-  
-  catch22 <- catch22$id
-  feasts <- feasts$id
-  tsfeatures <- tsfeatures$id
-  Kats <- Kats$id
-  tsfresh <- tsfresh$id
-  TSFEL <- TSFEL$id
-  hctsa <- hctsa$id
-  
-  tst <- c(unique(catch22), unique(feasts), unique(tsfeatures), 
-           unique(Kats), unique(tsfresh), unique(TSFEL), unique(hctsa))
-  
-  tst <- tst[duplicated(tst)]
-  
-  tmp_i <- tmp_i %>%
-    filter(id %in% unique(tst)) # Filter to just datasets that computed for not i
-  
-  tmp_not_i <- tmp_not_i %>%
-    filter(id %in% unique(tst))
-  
-  # Loop through each feature in set i and get correlations
-  
-  the_feats <- unique(tmp_i$names)
-  storage2 <- list()
-  
-  for(f in the_feats){
-    
-    val <- tmp_i %>%
-      filter(names == f) %>%
-      dplyr::select(values) %>%
-      pull()
-    
-    other_vals <- tmp_not_i %>%
-      mutate(comb_id = paste0(method,"_",names)) %>% # Preps for duplicate names across sets
-      dplyr::select(c(id, comb_id, values)) %>%
-      pivot_wider(id_cols = id, names_from = comb_id, values_from = values)
-    
-    ncols <- ncol(other_vals)
-    corMat <- data.frame()
-    
-    for(n in 2:ncols){
-      
-      thename <- colnames(other_vals[,n])
-      
-      corMat <- corMat %>%
-        mutate(thename = cor(val, other_vals[,n]))
-    }
-    
-    storage2[[f]] <- mycors
-  }
-  
-  # Store output
-  
-  storage[[i]] <- storage2
-  
+  return(myResults)
 }
+
+outputCor <- retrieve_results()
 
 #-------------- Generate data vis -------------------
 
