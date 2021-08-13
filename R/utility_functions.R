@@ -159,7 +159,8 @@ return_cor_mat <- function(dataset, x, y){
   
   # Make matrix
   
-  mat1 <- make_pairwise_matrix(dataset = dataset, x = x, y = y)
+  mat1 <- make_pairwise_matrix(dataset = normed, x = x, y = y) %>%
+    distinct()
   
   # Compute correlation for each entry
   
