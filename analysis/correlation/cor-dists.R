@@ -57,48 +57,29 @@ rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
 normed <- normed %>%
   mutate(comb_id = paste0(method,"_",names))
 
-# Get a matrix of pairwise combinations of features in a function to avoid
-# cluttering environment
+# Compute all correlations
 
-#' Function to get results and merge together
-#' 
-#' @return an object of class dataframe
-#' @author Trent Henderson
-#' 
-
-retrieve_results <- function(){
-  
-  mat1 <- return_cor_mat(normed, "catch22", "feasts")
-  mat2 <- return_cor_mat(normed, "catch22", "tsfeatures")
-  mat3 <- return_cor_mat(normed, "catch22", "Kats")
-  mat4 <- return_cor_mat(normed, "catch22", "tsfresh")
-  mat6 <- return_cor_mat(normed, "catch22", "TSFEL")
-  mat7 <- return_cor_mat(normed, "catch22", "hctsa")
-  mat8 <- return_cor_mat(normed, "feasts", "tsfeatures")
-  mat9 <- return_cor_mat(normed, "feasts", "Kats")
-  mat10 <- return_cor_mat(normed, "feasts", "tsfresh")
-  mat11 <- return_cor_mat(normed, "feasts", "TSFEL")
-  mat12 <- return_cor_mat(normed, "feasts", "hctsa")
-  mat13 <- return_cor_mat(normed, "tsfeatures", "Kats")
-  mat14 <- return_cor_mat(normed, "tsfeatures", "tsfresh")
-  mat15 <- return_cor_mat(normed, "tsfeatures", "TSFEL")
-  mat16 <- return_cor_mat(normed, "tsfeatures", "hctsa")
-  mat17 <- return_cor_mat(normed, "Kats", "tsfresh")
-  mat18 <- return_cor_mat(normed, "Kats", "TSFEL")
-  mat19 <- return_cor_mat(normed, "Kats", "hctsa")
-  mat20 <- return_cor_mat(normed, "tsfresh", "TSFEL")
-  mat21 <- return_cor_mat(normed, "tsfresh", "hctsa")
-  mat22 <- return_cor_mat(normed, "TSFEL", "hctsa")
-  
-  myResults <- bind_rows(mat1, mat2, mat3, mat4, mat5, mat6,
-                         mat7, mat8, mat9, mat10, mat11, mat12,
-                         mat13, mat14, mat15, mat16, mat17, mat18,
-                         mat19, mat20, mat21, mat22)
-  
-  return(myResults)
-}
-
-outputCor <- retrieve_results()
+return_cor_mat(normed, "catch22", "feasts", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/1.Rda")
+return_cor_mat(normed, "catch22", "tsfeatures", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/2.Rda")
+return_cor_mat(normed, "catch22", "Kats", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/3.Rda")
+return_cor_mat(normed, "catch22", "tsfresh", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/4.Rda")
+return_cor_mat(normed, "catch22", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/5.Rda")
+return_cor_mat(normed, "catch22", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/6.Rda")
+return_cor_mat(normed, "feasts", "tsfeatures", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/7.Rda")
+return_cor_mat(normed, "feasts", "Kats", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/8.Rda")
+return_cor_mat(normed, "feasts", "tsfresh", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/9.Rda")
+return_cor_mat(normed, "feasts", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/10.Rda")
+return_cor_mat(normed, "feasts", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/11.Rda")
+return_cor_mat(normed, "tsfeatures", "Kats", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/12.Rda")
+return_cor_mat(normed, "tsfeatures", "tsfresh", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/13.Rda")
+return_cor_mat(normed, "tsfeatures", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/14.Rda")
+return_cor_mat(normed, "tsfeatures", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/15.Rda")
+return_cor_mat(normed, "Kats", "tsfresh", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/16.Rda")
+return_cor_mat(normed, "Kats", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/17.Rda")
+return_cor_mat(normed, "Kats", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/18.Rda")
+return_cor_mat(normed, "tsfresh", "TSFEL", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/19.Rda")
+return_cor_mat(normed, "tsfresh", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/20.Rda")
+return_cor_mat(normed, "TSFEL", "hctsa", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/21.Rda")
 
 #-------------- Generate data vis -------------------
 
