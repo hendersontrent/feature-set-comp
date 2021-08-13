@@ -152,10 +152,12 @@ compute_pairwise_cor <- function(dataset, x, y){
 #' @param dataset the dataset containing normalised feature matrices
 #' @param x the first set of interest
 #' @param y the second set of interest
+#' @param store Boolean whether to save the correlation results to drive
+#' @param store_to filepath of where to save the file to if store = TRUE
 #' @author Trent Henderson
 #' 
 
-return_cor_mat <- function(dataset, x, y){
+return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
   
   # Make matrix
   
@@ -187,5 +189,10 @@ return_cor_mat <- function(dataset, x, y){
   }
   
   corMat <- rbindlist(storage, use.names = TRUE)
-  return(corMat)
+  
+  if(store){
+    save(corMat, file = store_to)
+  } else{
+    return(corMat)
+  }
 }
