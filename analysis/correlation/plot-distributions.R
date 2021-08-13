@@ -20,7 +20,7 @@
 #' @author Trent Henderson
 #' 
 
-plot_similarity_distributions <- function(filepath){
+plot_similarity_distributions <- function(filepath, save = TRUE){
   
   load(filepath)
   
@@ -35,57 +35,19 @@ plot_similarity_distributions <- function(filepath){
          y = "Frequency") +
     theme_bw()
   
-  return(p)
+  if(save){
+    savepath <- paste0("output/",gsub("_.*","",corMat[1,1]), "_", gsub("_.*","",corMat[1,2]),".png")
+    ggsave(savepath, p)
+  } else{
+    return(p)
+  }
 }
 
-#--------
-# catch22
-#--------
+# Get list of available pairwise correlation datafiles and iterate through to plot each one and save
 
-p <- plot_similarity_distributions("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/1.Rda")
-p1 <- plot_similarity_distributions("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/2.Rda")
-p2 <- plot_similarity_distributions("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/3.Rda")
-p3 <- plot_similarity_distributions("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/4.Rda")
-p4 <- plot_similarity_distributions("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/5.Rda")
+files <- list.files("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp", 
+                    full.names = TRUE, pattern = "\\.Rda", all.files = TRUE)
 
-ggsave("output/catch22_feasts.png", p)
-ggsave("output/catch22_tsfeatures.png", p1)
-ggsave("output/catch22_Kats.png", p2)
-ggsave("output/catch22_tsfeatures.png", p3)
-ggsave("output/catch22_TSFEL.png", p4)
-
-#--------
-# feasts
-#--------
-
-
-
-#-----------
-# tsfeatures
-#-----------
-
-
-
-#-----
-# Kats
-#-----
-
-
-
-#--------
-# tsfresh
-#--------
-
-
-
-#------
-# TSFEL
-#------
-
-
-
-#------
-# hctsa
-#------
-
-
+for(f in files){
+  plot_similarity_distributions(f, save = TRUE)
+}
