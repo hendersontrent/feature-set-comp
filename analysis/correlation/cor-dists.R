@@ -70,10 +70,10 @@ for(i in the_sets){
   
   # Loop through each feature in set i and get correlations
   
-  the_feats <- unique(tmp_i$names)
+  feats <- unique(tmp_i$names)
   storage2 <- list()
   
-  for(f in the_feats){
+  for(f in feats){
     
     val <- tmp_i %>%
       filter(names == f) %>%
