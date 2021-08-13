@@ -25,12 +25,9 @@ plot_similarity_distributions <- function(filepath, mytitle){
   
   tmp <- load(filepath)
   
-  tmp <- tmp %>%
-    group_by(pearson) %>%
-    summarise(counter = n()) %>%
-    ungroup() %>%
-    ggplot(aes(x = pearson, y = counter)) +
-    geom_bar(stat = "identity", alpha = 0.9) +
+  p <- tmp %>%
+    ggplot(aes(x = pearson)) +
+    geom_histogram(alpha = 0.9) +
     labs(title = mytitle,
          x = "Pearson Correlation Coefficient",
          y = "Frequency") +

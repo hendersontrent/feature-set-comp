@@ -57,36 +57,48 @@ rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
 normed <- normed %>%
   mutate(comb_id = paste0(method,"_",names))
 
-# Get a matrix of pairwise combinations of features
+# Get a matrix of pairwise combinations of features in a function to avoid
+# cluttering environment
 
-mat1 <- return_cor_mat(normed, "catch22", "feasts")
-mat2 <- return_cor_mat(normed, "catch22", "tsfeatures")
-mat3 <- return_cor_mat(normed, "catch22", "Kats")
-mat4 <- return_cor_mat(normed, "catch22", "tsfresh")
-mat6 <- return_cor_mat(normed, "catch22", "TSFEL")
-mat7 <- return_cor_mat(normed, "catch22", "hctsa")
-mat8 <- return_cor_mat(normed, "feasts", "tsfeatures")
-mat9 <- return_cor_mat(normed, "feasts", "Kats")
-mat10 <- return_cor_mat(normed, "feasts", "tsfresh")
-mat11 <- return_cor_mat(normed, "feasts", "TSFEL")
-mat12 <- return_cor_mat(normed, "feasts", "hctsa")
-mat13 <- return_cor_mat(normed, "tsfeatures", "Kats")
-mat14 <- return_cor_mat(normed, "tsfeatures", "tsfresh")
-mat15 <- return_cor_mat(normed, "tsfeatures", "TSFEL")
-mat16 <- return_cor_mat(normed, "tsfeatures", "hctsa")
-mat17 <- return_cor_mat(normed, "Kats", "tsfresh")
-mat18 <- return_cor_mat(normed, "Kats", "TSFEL")
-mat19 <- return_cor_mat(normed, "Kats", "hctsa")
-mat20 <- return_cor_mat(normed, "tsfresh", "TSFEL")
-mat21 <- return_cor_mat(normed, "tsfresh", "hctsa")
-mat22 <- return_cor_mat(normed, "TSFEL", "hctsa")
+#' Function to get results and merge together
+#' 
+#' @return an object of class dataframe
+#' @author Trent Henderson
+#' 
 
-# Compute correlation for each pairwise combination
+retrieve_results <- function(){
+  
+  mat1 <- return_cor_mat(normed, "catch22", "feasts")
+  mat2 <- return_cor_mat(normed, "catch22", "tsfeatures")
+  mat3 <- return_cor_mat(normed, "catch22", "Kats")
+  mat4 <- return_cor_mat(normed, "catch22", "tsfresh")
+  mat6 <- return_cor_mat(normed, "catch22", "TSFEL")
+  mat7 <- return_cor_mat(normed, "catch22", "hctsa")
+  mat8 <- return_cor_mat(normed, "feasts", "tsfeatures")
+  mat9 <- return_cor_mat(normed, "feasts", "Kats")
+  mat10 <- return_cor_mat(normed, "feasts", "tsfresh")
+  mat11 <- return_cor_mat(normed, "feasts", "TSFEL")
+  mat12 <- return_cor_mat(normed, "feasts", "hctsa")
+  mat13 <- return_cor_mat(normed, "tsfeatures", "Kats")
+  mat14 <- return_cor_mat(normed, "tsfeatures", "tsfresh")
+  mat15 <- return_cor_mat(normed, "tsfeatures", "TSFEL")
+  mat16 <- return_cor_mat(normed, "tsfeatures", "hctsa")
+  mat17 <- return_cor_mat(normed, "Kats", "tsfresh")
+  mat18 <- return_cor_mat(normed, "Kats", "TSFEL")
+  mat19 <- return_cor_mat(normed, "Kats", "hctsa")
+  mat20 <- return_cor_mat(normed, "tsfresh", "TSFEL")
+  mat21 <- return_cor_mat(normed, "tsfresh", "hctsa")
+  mat22 <- return_cor_mat(normed, "TSFEL", "hctsa")
+  
+  myResults <- bind_rows(mat1, mat2, mat3, mat4, mat5, mat6,
+                         mat7, mat8, mat9, mat10, mat11, mat12,
+                         mat13, mat14, mat15, mat16, mat17, mat18,
+                         mat19, mat20, mat21, mat22)
+  
+  return(myResults)
+}
 
-
-
-corMat <- sapply(mat1, function(x) sapply(mat1, function(y) compute_pairwise_cor(x,y)))
-
+outputCor <- retrieve_results()
 
 #-------------- Generate data vis -------------------
 
