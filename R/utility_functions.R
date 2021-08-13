@@ -80,10 +80,13 @@ get_consistent_datasets_feats <- function(){
     storage[[f]] <- tmp2
   }
   
-  the_list <- intersect(storage[2], storage[1])
-  
-  for(n in 3:length(storage)){
-    the_list <- intersect(the_list, storage[n])
+  for(n in 2:length(storage)){
+    
+    if(n == 2){
+      the_list <- unlist(intersect(unlist(storage[n]), unlist(storage[n-1])))
+    } else{
+      the_list <- unlist(intersect(the_list, unlist(storage[n])))
+    }
   }
   
   return(thelist)
