@@ -52,58 +52,74 @@ rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
 
 #-------------- Compute correlations ----------------
 
-# Compute all pairwise correlations between a feature and every other feature
-# included in all other sets
+#' Compute all pairwise correlations between a feature and every other feature
+#' included in all other sets
+#' 
+#' @param dataset the dataframe containing normalised feature matrices
+#' @return an object of class list
+#' @author Trent Henderson
+#' 
 
-storage <- list()
-the_sets <- unique(normed$method)
-
-for(i in the_sets){
+get_pairwise_correlations <- function(dataset){
   
-  tmp_i <- normed %>%
-    filter(method == i) %>%
-    drop_na()
+  tmp <- dataset %>%
+    mutate(comb_id = paste0(method,"_",names)) # Preps for duplicate names across sets
   
-  tmp_not_i <- normed %>%
-    filter(method != i) %>%
-    drop_na()
+  storage <- list()
+  the_sets <- unique(tmp$method)
   
-  # Loop through each feature in set i and get correlations
-  
-  feats <- unique(tmp_i$names)
-  storage2 <- list()
-  
-  for(f in feats){
+  for(i in the_sets){
     
-    val <- tmp_i %>%
-      filter(names == f) %>%
-      dplyr::select(values) %>%
-      pull()
+    message(paste0("Computing correlations for: ",i))
     
-    other_vals <- tmp_not_i %>%
-      mutate(comb_id = paste0(method,"_",names)) %>% # Preps for duplicate names across sets
-      dplyr::select(c(id, comb_id, values)) %>%
-      pivot_wider(id_cols = id, names_from = comb_id, values_from = values)
+    tmp_i <- tmp %>%
+      filter(method == i) %>%
+      drop_na()
     
-    ncols <- ncol(other_vals)
-    corMat <- data.frame()
+    tmp_not_i <- tmp %>%
+      filter(method != i) %>%
+      drop_na()
     
-    for(n in 2:ncols){
+    # Loop through each feature in set i and get correlations
+    
+    feats <- unique(tmp_i$comb_id)
+    storage2 <- list()
+    
+    for(f in feats){
       
-      thename <- colnames(other_vals[,n])
+      val <- tmp_i %>%
+        filter(comb_id == f) %>%
+        dplyr::select(values) %>%
+        pull()
       
-      corMat <- corMat %>%
-        mutate(thename = cor(val, other_vals[,n]))
+      other_vals <- tmp_not_i %>%
+        dplyr::select(c(id, comb_id, values)) %>%
+        pivot_wider(id_cols = id, names_from = comb_id, values_from = values)
+      
+      ncols <- ncol(other_vals)
+      storage3 <- list()
+      
+      for(n in 2:ncols){
+        
+        thename <- colnames(other_vals[,n])
+        
+        cors <- data.frame(names_1 = f,
+                           names_2 = thename,
+                           values = cor(val, other_vals[,n])[1])
+        
+        storage3[[n]] <- cors
+      }
+      
+      corMat <- rbindlist(storage3, use.names = TRUE)
+      storage2[[f]] <- corMat
     }
     
-    storage2[[f]] <- mycors
+    storage[[i]] <- storage2
   }
-  
-  # Store output
-  
-  storage[[i]] <- storage2
-  
+  return(storage)
 }
+
+pairwise_cors <- get_pairwise_correlations(dataset = normed)
 
 #-------------- Generate data vis -------------------
 
