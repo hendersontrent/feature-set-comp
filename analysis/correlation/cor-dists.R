@@ -59,6 +59,9 @@ normed <- normed %>%
 
 # Compute all correlations
 
+# NOTE: Storing these OUTSIDE of the project folder as it's local on my machine. These paths
+# will need to be manually changed for a different user if they intend to replicate.
+
 return_cor_mat(normed, "catch22", "feasts", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/1.Rda")
 return_cor_mat(normed, "catch22", "tsfeatures", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/2.Rda")
 return_cor_mat(normed, "catch22", "Kats", store = TRUE, store_to = "/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp/3.Rda")
