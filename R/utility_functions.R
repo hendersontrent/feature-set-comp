@@ -97,6 +97,33 @@ get_consistent_datasets_feats <- function(dataset){
 
 #---------------- Correlation helpers --------------
 
+#' Function to produce unique pairwise combinations of two vectors
+#' Taken from https://stackoverflow.com/questions/17171148/non-redundant-version-of-expand-grid
+#' 
+#' @param dataset the dataset containing normalised feature matrices
+#' @param x the first set of interest
+#' @param y the second set of interest
+#' @param include.equals Boolean of whether to include equal entries for x and y. Defaults to FALSE
+#' @return an object of class dataframe
+#' @author Trent Henderson
+#' 
+
+expand.grid.unique <- function(x, y, include.equals = FALSE) {
+  
+  x <- unique(x)
+  
+  y <- unique(y)
+  
+  g <- function(i)
+  {
+    z <- setdiff(y, x[seq_len(i-include.equals)])
+    
+    if(length(z)) cbind(x[i], z, deparse.level=0)
+  }
+  
+  do.call(rbind, lapply(seq_along(x), g))
+}
+
 #' Function to produce pairwise matrices for each feature in a set and each other set
 #' 
 #' @param dataset the dataset containing normalised feature matrices
@@ -118,7 +145,7 @@ make_pairwise_matrix <- function(dataset, x, y){
     dplyr::select(c(comb_id)) %>%
     pull()
   
-  myMat <- expand.grid(x = as.character(vector1), y = as.character(vector2))
+  myMat <- expand.grid.unique(x = as.character(vector1), y = as.character(vector2), include.equals = FALSE)
   return(myMat)
 }
 
@@ -161,8 +188,7 @@ return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
   
   # Make matrix
   
-  mat1 <- make_pairwise_matrix(dataset = dataset, x = x, y = y) %>%
-    distinct()
+  mat1 <- as.data.frame(make_pairwise_matrix(dataset = dataset, x = x, y = y))
   
   # Compute correlation for each entry
   
@@ -171,20 +197,20 @@ return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
   for(i in 1:nrow(mat1)){
     
     tryCatch({
-    
-    message(paste0("Computing correlation index: ",i))
-    
-    x1 <- as.character(mat1[i,1])
-    y1 <- as.character(mat1[i,2])
-    
-    the_cor <- compute_pairwise_cor(dataset = dataset, x = x1, y = y1)
-    
-    corDat <- data.frame(x = x1,
-                         y = y1,
-                         pearson = the_cor)
-    
-    storage[[i]] <- corDat
-    
+      
+      message(paste0("Computing correlation index: ",i))
+      
+      x1 <- as.character(mat1[i,1])
+      y1 <- as.character(mat1[i,2])
+      
+      the_cor <- compute_pairwise_cor(dataset = dataset, x = x1, y = y1)
+      
+      corDat <- data.frame(x = x1,
+                           y = y1,
+                           pearson = the_cor)
+      
+      storage[[i]] <- corDat
+      
     }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
