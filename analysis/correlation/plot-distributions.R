@@ -45,7 +45,7 @@ plot_similarity_distributions <- function(filepath, save = TRUE){
 
 # Get list of available pairwise correlation datafiles and iterate through to plot each one and save
 
-files <- list.files("/Users/trenthenderson/Dropbox/Manuscripts/feature-set-comp", 
+files <- list.files("data/corMat", 
                     full.names = TRUE, pattern = "\\.Rda", all.files = TRUE)
 
 for(f in files){
