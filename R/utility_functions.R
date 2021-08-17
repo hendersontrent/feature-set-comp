@@ -154,23 +154,17 @@ make_pairwise_matrix <- function(dataset, x, y){
 #' @param dataset the dataset containing normalised feature matrices
 #' @param x the first feature to filter by
 #' @param y the second feature to filter by
+#' @param cor_type the type of correlation to compute
 #' @return a numeric value of the correlation coefficient
 #' @author Trent Henderson
 #' 
 
-compute_pairwise_cor <- function(dataset, x, y){
+compute_pairwise_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
   
-  vector1 <- dataset %>%
-    filter(comb_id == x) %>%
-    dplyr::select(c(values)) %>%
-    pull()
+  x1 <- dataset[J(x)]
+  y1 <- dataset[J(y)]
   
-  vector2 <- dataset %>%
-    filter(comb_id == y) %>%
-    dplyr::select(c(values)) %>%
-    pull()
-  
-  the_cor <- cor(vector1, vector2)
+  the_cor <- cor(x1, y1, method = cor_type)
   return(the_cor)
 }
 
@@ -179,12 +173,13 @@ compute_pairwise_cor <- function(dataset, x, y){
 #' @param dataset the dataset containing normalised feature matrices
 #' @param x the first set of interest
 #' @param y the second set of interest
+#' @param cor_type the type of correlation to compute
 #' @param store Boolean whether to save the correlation results to drive
 #' @param store_to filepath of where to save the file to if store = TRUE
 #' @author Trent Henderson
 #' 
 
-return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
+return_cor_mat <- function(dataset, x, y, cor_type = c("pearson", "spearman"), store = FALSE, store_to = NULL){
   
   # Make matrix
   
@@ -203,7 +198,7 @@ return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
       x1 <- as.character(mat1[i,1])
       y1 <- as.character(mat1[i,2])
       
-      the_cor <- compute_pairwise_cor(dataset = dataset, x = x1, y = y1)
+      the_cor <- compute_pairwise_cor(dataset = dataset, x = x1, y = y1, cor_type = cor_type)
       
       corDat <- data.frame(x = x1,
                            y = y1,
