@@ -183,7 +183,7 @@ return_cor_mat <- function(dataset1, dataset2, x, y, cor_type = c("pearson", "sp
   
   corMat <- mat1 %>%
     group_by(V1, V2) %>%
-    summarise(pearson = return_cor(dataset = dataset2, x = V1, y = V2, cor_type = cor_type)) %>%
+    summarise(correlation = return_cor(dataset = dataset2, x = V1, y = V2, cor_type = cor_type)) %>%
     ungroup()
   
   save(corMat, file = save_to)
