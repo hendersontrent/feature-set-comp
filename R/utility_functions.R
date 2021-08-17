@@ -135,17 +135,12 @@ expand.grid.unique <- function(x, y, include.equals = FALSE) {
 
 make_pairwise_matrix <- function(dataset, x, y){
   
-  vector1 <- dataset %>%
-    filter(method == x) %>%
-    dplyr::select(c(comb_id)) %>%
-    pull()
+  x1 <- dataset[J(x)]
+  x1 <- x1$comb_id
+  y1 <- dataset[J(y)]
+  y1 <- y1$comb_id
   
-  vector2 <- dataset %>%
-    filter(method == y) %>%
-    dplyr::select(c(comb_id)) %>%
-    pull()
-  
-  myMat <- expand.grid.unique(x = as.character(vector1), y = as.character(vector2), include.equals = FALSE)
+  myMat <- expand.grid.unique(x = as.character(x1), y = as.character(y1), include.equals = FALSE)
   return(myMat)
 }
 
@@ -162,7 +157,9 @@ make_pairwise_matrix <- function(dataset, x, y){
 compute_pairwise_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
   
   x1 <- dataset[J(x)]
+  x1 <- x1$values
   y1 <- dataset[J(y)]
+  y1 <- y1$values
   
   the_cor <- cor(x1, y1, method = cor_type)
   return(the_cor)
