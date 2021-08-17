@@ -63,7 +63,7 @@ normed <- normed %>%
 
 normedDT <- data.table(normed)
 setkey(normedDT, method) 
-normedDT2 <- normed
+normedDT2 <- data.table(normed)
 setkey(normedDT2, comb_id)
 rm(normed)
 
