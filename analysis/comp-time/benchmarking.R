@@ -57,7 +57,7 @@ good_datasets <- get_good_ts()
 empirical1000_filt <- empirical1000 %>%
   filter(id %in% good_datasets)
 
-#------------------ Benchmarking ----------------
+#------------------ Benchmarking --------------------
 
 #' Helper function to run computation time tracking
 #' 
@@ -119,7 +119,7 @@ tsfel <- benchmark_features(the_set = "TSFEL")
 
 all_features <- bind_rows(catch22, feasts, tsfeatures, kats, tsfresh, tsfel)
 
-#------------------ Graphical summary -----------
+#------------------ Graphical summary ---------------
 
 p <- all_features %>%
   ggplot() +
