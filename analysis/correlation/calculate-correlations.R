@@ -58,7 +58,7 @@ normed <- normed %>%
   mutate(comb_id = paste0(method,"_",names)) %>%
   dplyr::select(c(comb_id, method, values))
 
-# Convert dataframe to data.table for faster operations
+# Convert dataframe to data.table for faster operations and set up keys
 # One is for pairwise matrices and one is for feature x feature correlations
 
 normedDT <- data.table(normed)

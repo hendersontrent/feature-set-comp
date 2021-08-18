@@ -172,18 +172,18 @@ return_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
 #' @param dataset2 the data.table containing individual feature indexed data
 #' @param x the first set of interest
 #' @param y the second set of interest
-#' @param cor_type the type of correlation to compute
+#' @param my_cor the type of correlation to compute
 #' @param save_to the filepath to save the output to
 #' @author Trent Henderson
 #' 
 
-return_cor_mat <- function(dataset1, dataset2, x, y, cor_type = c("pearson", "spearman"), save_to = NULL){
+return_cor_mat <- function(dataset1, dataset2, x, y, my_cor = c("pearson", "spearman"), save_to = NULL){
   
   mat1 <- as.data.frame(make_pairwise_matrix(dataset = dataset1, x = x, y = y))
   
   corMat <- mat1 %>%
     group_by(V1, V2) %>%
-    summarise(correlation = return_cor(dataset = dataset2, x = V1, y = V2, cor_type = cor_type)) %>%
+    summarise(correlation = return_cor(dataset = dataset2, x = V1, y = V2, cor_type = my_cor)) %>%
     ungroup()
   
   save(corMat, file = save_to)
