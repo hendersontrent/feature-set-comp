@@ -135,43 +135,13 @@ expand.grid.unique <- function(x, y, include.equals = FALSE) {
 
 make_pairwise_matrix <- function(dataset, x, y){
   
-  vector1 <- dataset %>%
-    filter(method == x) %>%
-    dplyr::select(c(comb_id)) %>%
-    pull()
+  x1 <- dataset[J(x)]
+  x1 <- x1$comb_id
+  y1 <- dataset[J(y)]
+  y1 <- y1$comb_id
   
-  vector2 <- dataset %>%
-    filter(method == y) %>%
-    dplyr::select(c(comb_id)) %>%
-    pull()
-  
-  myMat <- expand.grid.unique(x = as.character(vector1), y = as.character(vector2), include.equals = FALSE)
+  myMat <- expand.grid.unique(x = as.character(x1), y = as.character(y1), include.equals = FALSE)
   return(myMat)
-}
-
-#' Function to filter dataframe and compute correlation between two vectors
-#' 
-#' @param dataset the dataset containing normalised feature matrices
-#' @param x the first feature to filter by
-#' @param y the second feature to filter by
-#' @return a numeric value of the correlation coefficient
-#' @author Trent Henderson
-#' 
-
-compute_pairwise_cor <- function(dataset, x, y){
-  
-  vector1 <- dataset %>%
-    filter(comb_id == x) %>%
-    dplyr::select(c(values)) %>%
-    pull()
-  
-  vector2 <- dataset %>%
-    filter(comb_id == y) %>%
-    dplyr::select(c(values)) %>%
-    pull()
-  
-  the_cor <- cor(vector1, vector2)
-  return(the_cor)
 }
 
 #' Function to produce a pairwise combination and impute correlations
@@ -179,46 +149,42 @@ compute_pairwise_cor <- function(dataset, x, y){
 #' @param dataset the dataset containing normalised feature matrices
 #' @param x the first set of interest
 #' @param y the second set of interest
+#' @param cor_type the type of correlation to compute
 #' @param store Boolean whether to save the correlation results to drive
 #' @param store_to filepath of where to save the file to if store = TRUE
 #' @author Trent Henderson
 #' 
 
-return_cor_mat <- function(dataset, x, y, store = FALSE, store_to = NULL){
+return_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
   
-  # Make matrix
+  x1 <- dataset[J(x)]
+  x1 <- x1$values
+  y1 <- dataset[J(y)]
+  y1 <- y1$values
   
-  mat1 <- as.data.frame(make_pairwise_matrix(dataset = dataset, x = x, y = y))
+  the_cor <- cor(x1, y1, method = cor_type)
+  return(the_cor)
+}
+
+#' Function to drive the computations and save outputs
+#' 
+#' @param dataset1 the data.table containing feature set indexed data
+#' @param dataset2 the data.table containing individual feature indexed data
+#' @param x the first set of interest
+#' @param y the second set of interest
+#' @param my_cor the type of correlation to compute
+#' @param save_to the filepath to save the output to
+#' @author Trent Henderson
+#' 
+
+return_cor_mat <- function(dataset1, dataset2, x, y, my_cor = c("pearson", "spearman"), save_to = NULL){
   
-  # Compute correlation for each entry
+  mat1 <- as.data.frame(make_pairwise_matrix(dataset = dataset1, x = x, y = y))
   
-  storage <- list()
+  corMat <- mat1 %>%
+    group_by(V1, V2) %>%
+    summarise(correlation = return_cor(dataset = dataset2, x = V1, y = V2, cor_type = my_cor)) %>%
+    ungroup()
   
-  for(i in 1:nrow(mat1)){
-    
-    tryCatch({
-      
-      message(paste0("Computing correlation index: ",i))
-      
-      x1 <- as.character(mat1[i,1])
-      y1 <- as.character(mat1[i,2])
-      
-      the_cor <- compute_pairwise_cor(dataset = dataset, x = x1, y = y1)
-      
-      corDat <- data.frame(x = x1,
-                           y = y1,
-                           pearson = the_cor)
-      
-      storage[[i]] <- corDat
-      
-    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
-  }
-  
-  corMat <- rbindlist(storage, use.names = TRUE)
-  
-  if(store){
-    save(corMat, file = store_to)
-  } else{
-    return(corMat)
-  }
+  save(corMat, file = save_to)
 }
