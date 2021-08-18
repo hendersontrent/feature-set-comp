@@ -25,12 +25,31 @@ for(f in files){
 
 corMats <- rbindlist(storage, use.names = TRUE)
 
-#------------------ Preprocessing -------------------
+#------------------ Calculations --------------------
 
 # Add feature set labels back in
 
 
 
+# Compute maximum absolute correlation between each feature set
+
+maxabscors
+
+# Impute self-correlations for matrix graphic
+
+
+
+maxabscors <- bind_rows(maxabscors, selfcors)
+
 #------------------ Graphical summary ---------------
 
+p <- maxabscors %>%
+  ggplot(aes(x = var1, y = var2, fill = maxcor)) +
+  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
+  labs(x = "Feature Set",
+       y = "Feature Set") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(legend.position = "bottom")
 
+print(p)

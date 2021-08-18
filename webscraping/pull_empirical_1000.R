@@ -12,7 +12,6 @@
 
 #' Function to automatically webscrape and process the Empirical 1000 datasets
 #' 
-#' 
 #' @return a dataframe with the datasets organised in a tidy format
 #' @author Trent Henderson
 #' 
@@ -30,7 +29,8 @@ pull_empirical_1000 <- function(){
   ts <- ts %>%
     mutate(id = dplyr::row_number()) %>%
     pivot_longer(!id, names_to = "timepoint", values_to = "value") %>%
-    mutate(timepoint = as.numeric(gsub("V", "\\1", timepoint)))
+    mutate(timepoint = as.numeric(gsub("V", "\\1", timepoint))) %>%
+    drop_na()
   
   # Information file
   
