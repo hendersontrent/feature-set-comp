@@ -19,105 +19,91 @@ load("data/empirical1000.Rda")
 
 reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 
-# Filter to just good time series
+# Define a helper function
 
-#' Function to return only good time series
+#' Function to compute benchmarks
 #' 
-#' @return an object of class vector
-#' @author Trent Henderson
-#' 
-
-get_good_ts <- function(){
-  
-  # Load feature matrix
-  
-  load("data/Emp1000FeatMat.Rda")
-  
-  # Load hctsa results
-  
-  source("webscraping/pull_hctsa_results.R")
-  hctsa <- pull_hctsa_results() 
-  
-  # Merge together and remove erroneous duplicates
-  
-  fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa) %>%
-    dplyr::select(c(id, names, method, values)) %>%
-    distinct()
-  
-  # Retain only datasets on which all feature sets successfully computed
-  
-  source("R/utility_functions.R")
-  
-  good_datasets <- get_consistent_datasets()
-  return(good_datasets)
-}
-
-good_datasets <- get_good_ts()
-
-empirical1000_filt <- empirical1000 %>%
-  filter(id %in% good_datasets)
-
-#------------------ Benchmarking --------------------
-
-#' Helper function to run computation time tracking
-#' 
-#' @param data the dataframe to compute features on
-#' @param feature_set the feature set to compute
+#' @param my_set the feature set to calculate
 #' @return an object of class dataframe
 #' @author Trent Henderson
 #' 
 
-compute_time <- function(data, feature_set){
+run_benchmark <- function(my_set){
   
-  themax <- max(data$timepoint)
+  set.seed(123)
+  ids <- unique(empirical1000$id)
+  storage <- list()
   
-  m <- summary(microbenchmark(calculate_features(data = data, 
-                                                 id_var = "id", 
-                                                 time_var = "timepoint", 
-                                                 values_var = "values", 
-                                                 group_var = NULL,
-                                                 feature_set = feature_set),
-                              times = 1, unit = "s"))
+  # Random one off to generate burn-in
   
-  mdat <- data.frame(m) %>%
-    dplyr::select(c(mean, min, max)) %>%
-    mutate(ts_length = themax,
-           feature_set = feature_set)
+  short_id <- ids[1]
   
-  return(mdat)
+  shorter <- empirical1000 %>% 
+    filter(id == short_id)
+  
+  calculate_features(shorter, id_var = "id", 
+                     time_var = "timepoint", 
+                     values_var = "value", 
+                     group_var = "Keywords", 
+                     feature_set = my_set)
+
+  for(i in ids){
+    
+    message(paste0("Computing features for ", i))
+    
+    tryCatch({
+    
+      tmp <- empirical1000 %>% 
+        filter(id == i)
+      
+      m <- summary(microbenchmark(calculate_features(tmp, 
+                                                     id_var = "id", 
+                                                     time_var = "timepoint", 
+                                                     values_var = "value", 
+                                                     group_var = NULL, 
+                                                     feature_set = my_set), 
+                                  times = 1, unit = "s"))
+      
+      mdat <- data.frame(m) %>%
+        dplyr::select(c(mean)) %>%
+        mutate(id = i)
+    
+    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
+    
+    storage[[i]] <- mdat
+  }
+  
+  outs <- data.table::rbindlist(storage, use.names = TRUE) %>%
+    mutate(feature_set = my_set)
+  
+  return(outs)
 }
 
-#' Function to calculate computation times for each feature set
-#' 
-#' @param the_set the feature set to compute
-#' @return an object of class dataframe
-#' @author Trent Henderson
-#' 
+# Run benchmarking
 
-benchmark_features <- function(the_set = NULL){
-  
-  # Dummy to burn in instantiation
-  
-  
-  
-  # Run actual computations
-  
-  comptime <- compute_time()
-  
-  return(comptime)
-}
-
-
-# Run the function for each feature set and bind together for plotting
-
-catch22 <- benchmark_features(the_set = "catch22")
-feasts <- benchmark_features(the_set = "feasts")
-tsfeatures <- benchmark_features(the_set = "tsfeatures")
-kats <- benchmark_features(the_set = "Kats")
-tsfresh <- benchmark_features(the_set = "tsfresh")
-tsfel <- benchmark_features(the_set = "TSFEL")
+outs_22 <- run_benchmark(my_set = "catch22")
+outs_feasts <- run_benchmark(my_set = "feasts")
+outs_tsfeatures <- run_benchmark(my_set = "tsfeatures")
+outs_kats <- run_benchmark(my_set = "kats")
+outs_tsfresh <- run_benchmark(my_set = "tsfresh")
+outs_tsfel <- run_benchmark(my_set = "tsfel")
 
 all_features <- bind_rows(catch22, feasts, tsfeatures, kats, tsfresh, tsfel)
+
+# Join in length labels
+
+length_labels <- empirical1000 %>%
+  group_by(id) %>%
+  summarise(length = max(timepoint)) %>%
+  ungroup()
+
+all_features <- all_features %>%
+  left_join(length_labels, by = c("id" = "id")) %>%
+  group_by(feature_set, length) %>%
+  summarise(mean = mean(mean),
+            min = min(mean),
+            max = max(mean)) %>%
+  ungroup()
 
 #------------------ Graphical summary ---------------
 
