@@ -88,7 +88,7 @@ outs_kats <- run_benchmark(my_set = "kats")
 outs_tsfresh <- run_benchmark(my_set = "tsfresh")
 outs_tsfel <- run_benchmark(my_set = "tsfel")
 
-all_features <- bind_rows(catch22, feasts, tsfeatures, kats, tsfresh, tsfel)
+all_features <- bind_rows(outs_22, outs_feasts, outs_tsfeatures, outs_kats, outs_tsfresh, outs_tsfel)
 
 # Join in length labels
 
