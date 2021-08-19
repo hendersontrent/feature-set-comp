@@ -46,7 +46,11 @@ pull_empirical_1000 <- function(){
   return(main)
 }
 
-# Run function and save output
+# Run function and trim to gain faster computational time
 
-empirical1000 <- pull_empirical_1000()
+empirical1000 <- pull_empirical_1000() %>%
+  filter(timepoint <= 1000)
+
+# Store output
+
 save(empirical1000, file = "data/empirical1000.Rda")

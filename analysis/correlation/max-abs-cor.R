@@ -31,19 +31,24 @@ corMats <- rbindlist(storage, use.names = TRUE)
 
 
 
-# Compute maximum absolute correlation between each feature set
+# Compute mean maximum absolute correlation between each feature set
 
-maxabscors
+mean_maxabscors
+
+# Compute min absolute correlation between each feature set
+
+min_maxabscors
 
 # Impute self-correlations for matrix graphic
 
-
-
-maxabscors <- bind_rows(maxabscors, selfcors)
+mean_maxabscors <- bind_rows(mean_maxabscors, selfcors)
+min_maxabscors <- bind_rows(min_maxabscors, selfcors)
 
 #------------------ Graphical summary ---------------
 
-p <- maxabscors %>%
+# Mean
+
+p <- mean_maxabscors %>%
   ggplot(aes(x = var1, y = var2, fill = maxcor)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   labs(x = "Feature Set",
@@ -53,3 +58,16 @@ p <- maxabscors %>%
   theme(legend.position = "bottom")
 
 print(p)
+
+# Min
+
+p1 <- min_maxabscors %>%
+  ggplot(aes(x = var1, y = var2, fill = maxcor)) +
+  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
+  labs(x = "Feature Set",
+       y = "Feature Set") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+print(p)1
