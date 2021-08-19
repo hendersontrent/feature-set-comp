@@ -21,6 +21,7 @@ library(theft)
 library(Cairo)
 library(reticulate)
 library(broom)
+library(microbenchmark)
 
 # Create important folders if none exist
 

@@ -30,8 +30,8 @@ plot_similarity_distributions <- function(filepath, save = TRUE){
     geom_histogram(alpha = 0.8, fill = "#D95F02", binwidth = 0.05) +
     labs(title = paste0("Distribution of feature correlations between ", 
                         gsub("_.*","",corMat[1,1]), " and ", gsub("_.*","",corMat[1,2])),
-         subtitle = "Each datapoint is a feature x feature Pearson correlation",
-         x = "Pearson Correlation Coefficient",
+         subtitle = "Each datapoint is a feature x feature correlation",
+         x = "Correlation Coefficient",
          y = "Frequency") +
     theme_bw()
   

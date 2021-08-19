@@ -22,11 +22,16 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 #----------------- Calculate features -----------------
 
 outs_22 <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "catch22")
+outs_feasts <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "feasts")
+outs_tsfeatures <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfeatures")
+outs_kats <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "kats")
+outs_tsfresh <- calculate_features(empirical1000, id_var = "id", time_var = "timepoint", values_var = "value", group_var = "Keywords", feature_set = "tsfresh", tsfresh_cleanup = FALSE)
 
-#--------------------------------
-# Do the others in TryCatch loops
-# as errors arise otherwise
-#--------------------------------
+#---------------------------------
+# Do TSFEL in a TryCatch 
+# loop as errors arise otherwise and 
+# theft doesn't have a solution yet
+#---------------------------------
 
 #' Function to loop through unique IDs and compute features
 #' 
@@ -63,20 +68,13 @@ do_features <- function(the_set){
   return(outputData)
 }
 
-outs_fe <- do_features(the_set = "feasts")
-outs_ts <- do_features(the_set = "tsfeatures")
-outs_tsfresh <- do_features(the_set = "tsfresh")
 outs_tsfel <- do_features(the_set = "tsfel")
-outs_kats <- do_features(the_set = "kats")
-      
-# Bind together
 
-Emp1000FeatMat <- bind_rows(outs_22, outs_fe, outs_ts, outs_tsfresh, outs_tsfel, outs_kats)
+# Bind all together
 
-# Save as .Rda
+Emp1000FeatMat <- bind_rows(outs_22, outs_feasts, outs_tsfeatures,
+                            outs_kats, outs_tsfresh, outs_tsfel)
+
+# Save
 
 save(Emp1000FeatMat, file = "data/Emp1000FeatMat.Rda")
-
-# Clean up environment
-
-rm(empirical1000, outs_22, outs_fe, outs_ts, outs_tsfresh, outs_tsfel, outs_kats, Emp1000FeatMat)
