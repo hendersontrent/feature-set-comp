@@ -119,6 +119,7 @@ p <- all_features2 %>%
 print(p)
 
 ggsave("output/comp-time.png", p)
+ggsave("output/comp-time.svg", p)
 
 #------------------ Numerical summary ---------------
 
