@@ -9,10 +9,6 @@
 # Author: Trent Henderson, 17 August 2021
 #----------------------------------------
 
-# Fix Python environment
-
-reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
-
 #------------------ Benchmark calculations ----------
 
 #-------------------
@@ -20,25 +16,48 @@ reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
 # for R packages
 #-------------------
 
+#' Function to track computation time for Rcatch22, feasts, and tsfeatures
+#' 
+#' @return an object of class dataframe
+#' @author Trent Henderson
+#' 
 
+track_comptime <- function(){
+  
+  #--------- Rcatch22 ----------
+  
+  x
+  
+  #--------- feasts ------------
+  
+  x
+  
+  #--------- tsfeatures --------
+  
+  x
+}
+
+r_pkg_results <- track_comptime()
 
 #-------------------
 # Read in results
 # for non-R packages
 #-------------------
 
-
+kats_results <- readr::read_csv("output/comptime/kats.csv")
+tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
 
 #-------------------
 # Bind all together
 # for plotting
 #-------------------
 
-
+all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results)
 
 #------------------ Graphical summary ---------------
 
-p <- all_features %>%
+p <- all_comptimes %>%
   ggplot() +
   geom_errorbar(aes(x = ts_length, ymin = min, ymax = max, colour = feature_set), width = 0.1) +
   geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +

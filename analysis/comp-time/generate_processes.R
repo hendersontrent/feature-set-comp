@@ -14,7 +14,6 @@
 #' 
 #' @param n the length of the time series to generate
 #' @param nsims the number of time series of length n to generate
-#' @return an object of class dataframe
 #' @author Trent Henderson
 #' 
 

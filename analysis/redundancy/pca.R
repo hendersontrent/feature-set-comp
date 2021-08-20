@@ -195,4 +195,6 @@ print(p1)
 # Save plots
 
 ggsave("output/pca-scaled.png", p)
+ggsave("output/pca-scaled.svg", p)
 ggsave("output/pca-cumsum-scaled.png", p1)
+ggsave("output/pca-cumsum-scaled.svg", p1)
