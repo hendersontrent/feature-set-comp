@@ -27,7 +27,10 @@ for file in glob.glob("*.csv"):
 
     # Read in file
 
-    data = pd.read_csv(file)
+    data1 = pd.read_csv(file)
+    times = data1.loc[:,"time"]
+    values = data1.loc[:,"value"]
+    data = pd.DataFrame({'time':times, 'value':values})
     data['time'] = pd.to_datetime(data['time'])
     data['time'] = [x.date() for x in data.time]
     data = TimeSeriesData(data)
@@ -43,7 +46,7 @@ for file in glob.glob("*.csv"):
         extracted_features = model.transform(data)
         stop = time.time()
         duration = stop - start
-        lst.append([data.shape[0], duration, "tsfresh"])
+        lst.append([data1.shape[0], duration, "Kats"])
 
 # Get results in clean tidy format
 
