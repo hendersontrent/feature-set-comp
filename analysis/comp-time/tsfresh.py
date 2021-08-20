@@ -24,12 +24,24 @@ lst = []
 
 for file in glob.glob("*.csv"):
 
+    # Read in file
+
     x = pd.read_csv(file)
+
+    # Add in time and ID column for tsfresh
+
+    x['id'] = '1'
+    x['time'] = np.arange(len(x))
+
+    # Run computation
+
     start = time.time()
-    extracted_features = extract_features(x, column_id = column_id, column_sort = column_sort)
+    extracted_features = extract_features(x, column_id = 'time', column_sort = 'id')
     stop = time.time()
     duration = stop - start
     lst.append([x.shape[0], duration, "tsfresh"])
+
+# Get results in clean tidy format
 
 results = pd.DataFrame(lst, columns = cols)
 
