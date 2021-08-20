@@ -43,7 +43,9 @@ min_maxabscors <- corMats
 
 # Impute self-correlations for matrix graphic
 
-
+selfcors <- data.frame(V1 = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL"),
+                       V2 = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL"),
+                       maxcor = c(1, 1, 1, 1, 1, 1))
 
 mean_maxabscors <- bind_rows(mean_maxabscors, selfcors)
 min_maxabscors <- bind_rows(min_maxabscors, selfcors)
@@ -58,7 +60,7 @@ p <- mean_maxabscors %>%
   geom_text(aes(label = round(maxcor, digits = 2)), colour = "white") +
   labs(x = "Feature Set",
        y = "Feature Set") +
-  scale_fill_stepsn(n.breaks = 11, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
+  scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
   theme(legend.position = "bottom")
 
@@ -72,7 +74,7 @@ p1 <- min_maxabscors %>%
   geom_text(aes(label = round(maxcor, digits = 2)), colour = "white") +
   labs(x = "Feature Set",
        y = "Feature Set") +
-  scale_fill_stepsn(n.breaks = 11, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
+  scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
   theme(legend.position = "bottom")
 
