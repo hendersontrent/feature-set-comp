@@ -39,3 +39,4 @@ p <- mySamples %>%
 print(p)
 
 ggsave("output/sample-ts.png", p)
+ggsave("output/sample-ts.svg", p)
