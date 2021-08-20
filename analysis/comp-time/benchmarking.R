@@ -97,30 +97,21 @@ length_labels <- empirical1000 %>%
   summarise(length = max(timepoint)) %>%
   ungroup()
 
-all_features <- all_features %>%
+all_features2 <- all_features %>%
   left_join(length_labels, by = c("id" = "id")) %>%
   group_by(feature_set, length) %>%
-  summarise(mean = mean(mean),
-            min = min(mean),
-            max = max(mean)) %>%
+  summarise(mean = mean(mean)) %>%
   ungroup()
 
 #------------------ Graphical summary ---------------
 
-p <- all_features %>%
+p <- all_features2 %>%
   ggplot() +
-  geom_errorbar(aes(x = ts_length, ymin = min, ymax = max, colour = feature_set), width = 0.1) +
-  geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +
-  geom_point(aes(x = ts_length, y = mean, colour = feature_set), size = 2) +
+  geom_point(aes(x = length, y = mean, colour = feature_set)) +
   labs(x = "Time Series Length",
        y = "Computation Time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
-  scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n = 4),
-                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-  scale_y_log10(limits = c(1e-3, 1e3),
-                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 7),
-                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom")
@@ -128,3 +119,22 @@ p <- all_features %>%
 print(p)
 
 ggsave("output/comp-time.png", p)
+ggsave("output/comp-time.svg", p)
+
+#------------------ Numerical summary ---------------
+
+# Get number of features per set
+
+load("data/Emp1000FeatMat.Rda") # Load feature matrix
+
+num_feats <- Emp1000FeatMat %>%
+  dplyr::select(c(id, names, method)) %>%
+  distinct() %>%
+  group_by(id, names, method) %>%
+  summarise(counter = n()) %>%
+  ungroup() %>%
+  dplyr::select(c(names, method)) %>%
+  distinct() %>%
+  group_by(method) %>%
+  summarise(counter = n()) %>%
+  ungroup()
