@@ -35,11 +35,12 @@ for file in glob.glob("*.csv"):
 
     # Run computation
 
-    start = time.time()
-    extracted_features = extract_features(timeseries, column_id = 'id', column_sort = 'time')
-    stop = time.time()
-    duration = stop - start
-    lst.append([timeseries.shape[0], duration, "tsfresh"])
+    if __name__ == '__main__': 
+        start = time.time()
+        extracted_features = extract_features(timeseries, column_id = 'id', column_sort = 'time')
+        stop = time.time()
+        duration = stop - start
+        lst.append([timeseries.shape[0], duration, "tsfresh"])
 
 # Get results in clean tidy format
 
