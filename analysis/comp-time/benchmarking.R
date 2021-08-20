@@ -26,15 +26,62 @@ track_comptime <- function(){
   
   #--------- Rcatch22 ----------
   
-  x
+  files <- list.files("data/sims", full.names = TRUE, pattern = "\\csv", all.files = TRUE)
+  storage_c22 <- list()
+  storage_fe <- list()
+  storage_ts <- list()
+  
+  for(f in files){
+    
+    tmp <- readr::read_csv(f)
+    x <- tmp$values
+    
+    m <- summary(microbenchmark(Rcatch22::catch22_all(x), times = 1, unit = "s"))
+    
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = length(x),
+             feature_set = "catch22")
+    
+    storage_c22[[f]] <- results
+  }
+  
+  results_c22 <- data.table::rbindlist(storage_c22, use.names = TRUE)
   
   #--------- feasts ------------
   
-  x
+  #x
   
   #--------- tsfeatures --------
   
-  x
+  for(f in files){
+    
+    tmp <- readr::read_csv(f)
+    x <- tmp$values
+    
+    m <- summary(microbenchmark(tsfeatures::tsfeatures(x, 
+                                                       features = c("frequency", "stl_features", "entropy", "acf_features",
+                                                                    "compengine", "arch_stat", "crossing_points", "flat_spots",
+                                                                    "heterogeneity", "holt_parameters", "hurst", 
+                                                                    "lumpiness", "max_kl_shift", "max_level_shift", "max_var_shift", 
+                                                                    "nonlinearity", "pacf_features", "stability", "unitroot_kpss",
+                                                                    "unitroot_pp", "embed2_incircle", "firstzero_ac",
+                                                                    "histogram_mode", "localsimple_taures", "sampenc",
+                                                                    "spreadrandomlocal_meantaul")), 
+                                times = 1, unit = "s"))
+    
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = length(x),
+             feature_set = "tsfeatures")
+    
+    storage_ts[[f]] <- results
+  }
+  results_ts <- data.table::rbindlist(storage_ts, use.names = TRUE)
+  
+  #--------- Binding -----------
+  
+  outs <- bind_rows(results_c22, results_ts)
 }
 
 r_pkg_results <- track_comptime()
