@@ -19,6 +19,9 @@ from tsfresh import extract_features
 
 os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims")
 
+cols = ['ts_length', 'mean', 'feature_set']
+lst = []
+
 for file in glob.glob("*.csv"):
 
     x = pd.read_csv(file)
@@ -26,7 +29,9 @@ for file in glob.glob("*.csv"):
     extracted_features = extract_features(x, column_id = column_id, column_sort = column_sort)
     stop = time.time()
     duration = stop - start
-    results = pd.DataFrame({'ts_length': x.shape[0], 'mean': duration, 'feature_set': "tsfresh"})
+    lst.append([x.shape[0], duration, "tsfresh"])
+
+results = pd.DataFrame(lst, columns = cols)
 
 # Store outputs
 
