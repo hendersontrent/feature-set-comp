@@ -47,12 +47,33 @@ track_comptime <- function(){
   }
   
   results_c22 <- data.table::rbindlist(storage_c22, use.names = TRUE)
+  rm(tmp, x, m, results)
   
   #--------- feasts ------------
   
-  #x
+  message("Doing feasts...")
+  
+  for(f in files){
+    
+    tmp <- readr::read_csv(f)
+    x1 <- tsibble::as_tsibble(tmp, index = X1)
+    
+    m <- summary(microbenchmark(x1 %>% fabletools::features(values, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
+    
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = nrow(x1),
+             feature_set = "feasts")
+    
+    storage_fe[[f]] <- results
+  }
+  
+  results_fe <- data.table::rbindlist(storage_fe, use.names = TRUE)
+  rm(tmp, x, x1, m, results)
   
   #--------- tsfeatures --------
+  
+  message("Doing tsfeatures...")
   
   for(f in files){
     
@@ -81,7 +102,7 @@ track_comptime <- function(){
   
   #--------- Binding -----------
   
-  outs <- bind_rows(results_c22, results_ts)
+  outs <- bind_rows(results_c22, results_fe, results_ts)
 }
 
 r_pkg_results <- track_comptime()
@@ -97,26 +118,34 @@ tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
 
 #-------------------
 # Bind all together
-# for plotting
+# for plotting and
+# compute min, mean,
+# max for each
+# length
 #-------------------
 
-all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results)
+all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results) %>%
+  group_by(feature_set, ts_length) %>%
+  summarise(mean = mean(mean)) %>%
+  ungroup()
 
 #------------------ Graphical summary ---------------
 
 p <- all_comptimes %>%
   ggplot() +
-  geom_errorbar(aes(x = ts_length, ymin = min, ymax = max, colour = feature_set), width = 0.1) +
   geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +
   geom_point(aes(x = ts_length, y = mean, colour = feature_set), size = 2) +
   labs(x = "Time Series Length",
        y = "Computation Time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
-  scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x, n = 3),
+  # scale_x_continuous(limits = c(100, 1000),
+  #                    breaks = c(100, 250, 500, 750, 1000)) +
+  scale_x_log10(limits = c(1e2, 1e3),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 4),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-  scale_y_log10(limits = c(1e-3, 1e3),
-                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 7),
+  scale_y_log10(limits = c(1e-3, 1e1),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 5),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
