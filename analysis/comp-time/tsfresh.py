@@ -8,4 +8,14 @@
 # Author: Trent Henderson, 20 August 2021
 #----------------------------------------
 
+# Read in time series data
+
+
+
+# Run benchmarking
+
+
+
+# Store outputs
+
 
