@@ -1,8 +1,6 @@
 #--------------------------------------
 # This script sets out to produce
-# computation time benchmarking for
-# all feature sets on the datasets that
-# all successfully compute features on
+# computation time benchmarking analysis
 #
 # NOTE: setup.R must be run first
 #--------------------------------------
@@ -11,107 +9,144 @@
 # Author: Trent Henderson, 17 August 2021
 #----------------------------------------
 
-# Read in data
+#------------------ Benchmark calculations ----------
 
-load("data/empirical1000.Rda")
+#-------------------
+# Compute times
+# for R packages
+#-------------------
 
-# Fix Python environment
-
-reticulate::use_python("~/opt/anaconda3/bin/python", required = TRUE)
-
-# Define a helper function
-
-#' Function to compute benchmarks
+#' Function to track computation time for Rcatch22, feasts, and tsfeatures
 #' 
-#' @param my_set the feature set to calculate
 #' @return an object of class dataframe
 #' @author Trent Henderson
 #' 
 
-run_benchmark <- function(my_set){
+track_comptime <- function(){
   
-  set.seed(123)
-  ids <- unique(empirical1000$id)
-  storage <- list()
+  #--------- Rcatch22 ----------
   
-  # Random one off to generate burn-in
+  files <- list.files("data/sims", full.names = TRUE, pattern = "\\csv", all.files = TRUE)
+  storage_c22 <- list()
+  storage_fe <- list()
+  storage_ts <- list()
   
-  short_id <- ids[1]
-  
-  shorter <- empirical1000 %>% 
-    filter(id == short_id)
-  
-  calculate_features(shorter, id_var = "id", 
-                     time_var = "timepoint", 
-                     values_var = "value", 
-                     group_var = "Keywords", 
-                     feature_set = my_set)
-
-  for(i in ids){
+  for(f in files){
     
-    message(paste0("Computing features for ", i))
+    tmp <- readr::read_csv(f)
+    x <- tmp$values
     
-    tryCatch({
+    m <- summary(microbenchmark(Rcatch22::catch22_all(x), times = 1, unit = "s"))
     
-      tmp <- empirical1000 %>% 
-        filter(id == i)
-      
-      m <- summary(microbenchmark(calculate_features(tmp, 
-                                                     id_var = "id", 
-                                                     time_var = "timepoint", 
-                                                     values_var = "value", 
-                                                     group_var = NULL, 
-                                                     feature_set = my_set), 
-                                  times = 1, unit = "s"))
-      
-      mdat <- data.frame(m) %>%
-        dplyr::select(c(mean)) %>%
-        mutate(id = i)
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = length(x),
+             feature_set = "catch22")
     
-    }, error = function(e){cat("ERROR :",conditionMessage(e), "\n")})
-    
-    storage[[i]] <- mdat
+    storage_c22[[f]] <- results
   }
   
-  outs <- data.table::rbindlist(storage, use.names = TRUE) %>%
-    mutate(feature_set = my_set)
+  results_c22 <- data.table::rbindlist(storage_c22, use.names = TRUE)
+  rm(tmp, x, m, results)
   
-  return(outs)
+  #--------- feasts ------------
+  
+  message("Doing feasts...")
+  
+  for(f in files){
+    
+    tmp <- readr::read_csv(f)
+    x1 <- tsibble::as_tsibble(tmp, index = X1)
+    
+    m <- summary(microbenchmark(x1 %>% fabletools::features(values, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
+    
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = nrow(x1),
+             feature_set = "feasts")
+    
+    storage_fe[[f]] <- results
+  }
+  
+  results_fe <- data.table::rbindlist(storage_fe, use.names = TRUE)
+  rm(tmp, x, x1, m, results)
+  
+  #--------- tsfeatures --------
+  
+  message("Doing tsfeatures...")
+  
+  for(f in files){
+    
+    tmp <- readr::read_csv(f)
+    x <- tmp$values
+    
+    m <- summary(microbenchmark(tsfeatures::tsfeatures(x, 
+                                                       features = c("frequency", "stl_features", "entropy", "acf_features",
+                                                                    "compengine", "arch_stat", "crossing_points", "flat_spots",
+                                                                    "heterogeneity", "holt_parameters", "hurst", 
+                                                                    "lumpiness", "max_kl_shift", "max_level_shift", "max_var_shift", 
+                                                                    "nonlinearity", "pacf_features", "stability", "unitroot_kpss",
+                                                                    "unitroot_pp", "embed2_incircle", "firstzero_ac",
+                                                                    "histogram_mode", "localsimple_taures", "sampenc",
+                                                                    "spreadrandomlocal_meantaul")), 
+                                times = 1, unit = "s"))
+    
+    results <- data.frame(m) %>%
+      dplyr::select(c(mean)) %>%
+      mutate(ts_length = length(x),
+             feature_set = "tsfeatures")
+    
+    storage_ts[[f]] <- results
+  }
+  results_ts <- data.table::rbindlist(storage_ts, use.names = TRUE)
+  
+  #--------- Binding -----------
+  
+  outs <- bind_rows(results_c22, results_fe, results_ts)
 }
 
-# Run benchmarking
+r_pkg_results <- track_comptime()
 
-outs_22 <- run_benchmark(my_set = "catch22")
-outs_feasts <- run_benchmark(my_set = "feasts")
-outs_tsfeatures <- run_benchmark(my_set = "tsfeatures")
-outs_kats <- run_benchmark(my_set = "kats")
-outs_tsfresh <- run_benchmark(my_set = "tsfresh")
-outs_tsfel <- run_benchmark(my_set = "tsfel")
+#-------------------
+# Read in results
+# for non-R packages
+#-------------------
 
-all_features <- bind_rows(outs_22, outs_feasts, outs_tsfeatures, outs_kats, outs_tsfresh, outs_tsfel)
+kats_results <- readr::read_csv("output/comptime/kats.csv")
+tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
 
-# Join in length labels
+#-------------------
+# Bind all together
+# for plotting and
+# compute min, mean,
+# max for each
+# length
+#-------------------
 
-length_labels <- empirical1000 %>%
-  group_by(id) %>%
-  summarise(length = max(timepoint)) %>%
-  ungroup()
-
-all_features2 <- all_features %>%
-  left_join(length_labels, by = c("id" = "id")) %>%
-  group_by(feature_set, length) %>%
+all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results) %>%
+  group_by(feature_set, ts_length) %>%
   summarise(mean = mean(mean)) %>%
   ungroup()
 
 #------------------ Graphical summary ---------------
 
-p <- all_features2 %>%
+p <- all_comptimes %>%
   ggplot() +
-  geom_point(aes(x = length, y = mean, colour = feature_set)) +
+  geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +
+  geom_point(aes(x = ts_length, y = mean, colour = feature_set), size = 2) +
   labs(x = "Time Series Length",
        y = "Computation Time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
+  # scale_x_continuous(limits = c(100, 1000),
+  #                    breaks = c(100, 250, 500, 750, 1000)) +
+  scale_x_log10(limits = c(1e2, 1e3),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 4),
+                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  scale_y_log10(limits = c(1e-3, 1e1),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 5),
+                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom")
@@ -120,21 +155,3 @@ print(p)
 
 ggsave("output/comp-time.png", p)
 ggsave("output/comp-time.svg", p)
-
-#------------------ Numerical summary ---------------
-
-# Get number of features per set
-
-load("data/Emp1000FeatMat.Rda") # Load feature matrix
-
-num_feats <- Emp1000FeatMat %>%
-  dplyr::select(c(id, names, method)) %>%
-  distinct() %>%
-  group_by(id, names, method) %>%
-  summarise(counter = n()) %>%
-  ungroup() %>%
-  dplyr::select(c(names, method)) %>%
-  distinct() %>%
-  group_by(method) %>%
-  summarise(counter = n()) %>%
-  ungroup()
