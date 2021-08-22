@@ -50,6 +50,14 @@ generate_processes <- function(n, nsims = 5){
     
     write.csv(tmp2, paste0("data/sims/kats/",n,"_",i,".csv"))
   }
+  
+  # Make no column header version for Latbal
+  
+  for(i in 1:nsims){
+    
+    values <- rnorm(n, mean = 0, sd = 1)
+    write.table(values, paste0("data/sims/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
+  }
 }
 
 # Generate the data
