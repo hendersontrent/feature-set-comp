@@ -23,6 +23,7 @@ library(Cairo)
 library(reticulate)
 library(broom)
 library(microbenchmark)
+library(R.matlab)
 
 # Create important folders if none exist
 
@@ -39,4 +40,5 @@ if(!dir.exists('data')) dir.create('data')
 if(!dir.exists('data/corMats')) dir.create('data/corMats')
 if(!dir.exists('data/sims')) dir.create('data/sims')
 if(!dir.exists('data/sims/kats')) dir.create('data/sims/kats')
+if(!dir.exists('data/sims/hctsa')) dir.create('data/sims/hctsa')
 if(!dir.exists('R')) dir.create('R')
