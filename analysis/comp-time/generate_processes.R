@@ -51,16 +51,12 @@ generate_processes <- function(n, nsims = 5){
     write.csv(tmp2, paste0("data/sims/kats/",n,"_",i,".csv"))
   }
   
-  # Make 3-object Matlab version for hctsa
+  # Make no column header version for Latbal
   
   for(i in 1:nsims){
     
-    timeSeriesData <- list(values = c(rnorm(n, mean = 0, sd = 1)))
-    labels <- c(paste0(n,"_",i))
-    keywords <- c(as.character(n))
-    
-    writeMat(paste0("data/sims/hctsa/",n,"_",i,".mat"), timeSeriesData = timeSeriesData,
-             labels = labels, keywords = keywords)
+    values <- rnorm(n, mean = 0, sd = 1)
+    write.table(values, paste0("data/sims/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
   }
 }
 
