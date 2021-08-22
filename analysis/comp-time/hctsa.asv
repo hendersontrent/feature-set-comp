@@ -2,7 +2,7 @@
 ​
 % File names containing time series
 
-fileNamesToRead = {'/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/100_1.csv','file2.csv',};
+fileNamesToRead = {'/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/100_1.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/100_2.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/100_3.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/100_4.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/100_5.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/250_1.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/250_2.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/250_3.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/250_4.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/250_5.mat','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/hctsa/500_1.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/500_2.csv', '/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/500_3.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/500_4.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/500_5.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/750_1.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/750_2.csv', '/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/750_3.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/750_4.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/750_5.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/1000_1.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/1000_2.csv', '/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/1000_3.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/1000_4.csv','/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/1000_5.csv'};
 ​
 % Set up feature information
 
@@ -14,7 +14,7 @@ MasterOperations = SQL_Add('mops','INP_mops.txt',false,false);
 numFiles = length(fileNamesToRead);
 timeTaken = nan(numFiles,1);
 for i = 1:numFiles
-    X = dlmread(fileNamesToRead{i});
+    X = load(fileNamesToRead{i});
     tic;
     TS_CalculateFeatureVector(X,false,Operations,MasterOperations,false,false);
     timeTaken(i) = toc;
