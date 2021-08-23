@@ -30,23 +30,6 @@ rm(Emp1000FeatMat, hctsa)
 
 #-------------- Preliminary calculations----------------
 
-#------------------------
-# Retain only datasets on 
-# which all feature sets 
-# successfully computed
-#------------------------
-
-source("R/utility_functions.R")
-
-good_datasets <- get_consistent_datasets()
-
-fullFeatMat_filt <- fullFeatMat %>%
-  filter(id %in% good_datasets)
-
-# Clean up environment
-
-rm(fullFeatMat)
-
 #---------------------------
 # Total number of features 
 # by feature set and dataset
