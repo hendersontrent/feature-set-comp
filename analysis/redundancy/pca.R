@@ -17,8 +17,8 @@ load("data/Emp1000FeatMat.Rda")
 
 # Load hctsa results
 
-source("webscraping/pull_hctsa_results.R")
-hctsa <- pull_hctsa_results() 
+source("R/process_hctsa_csv.R")
+hctsa <- process_hctsa_csv() 
 
 # Merge together
 
@@ -35,7 +35,7 @@ rm(Emp1000FeatMat, hctsa)
 # by feature set and dataset
 #---------------------------
 
-num_feats <- fullFeatMat_filt %>%
+num_feats <- fullFeatMat %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%
@@ -129,7 +129,7 @@ do_pca_summary <- function(dataset){
 
 # Run function and compute cumulative sum for later
 
-pca_results <- do_pca_summary(fullFeatMat_filt) %>%
+pca_results <- do_pca_summary(fullFeatMat) %>%
   group_by(feature_set) %>%
   arrange(PC) %>%
   mutate(cs = cumsum(percent)) %>%
