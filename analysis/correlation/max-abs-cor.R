@@ -12,15 +12,15 @@
 
 # Get list of available pairwise correlation datafiles and bind together
 
-files <- list.files("data/corMat", 
+files <- list.files("data/corMats", 
                     full.names = TRUE, pattern = "\\.Rda", all.files = TRUE)
 
 storage <- list()
 
 for(f in files){
   
-  tmp <- load(f)
-  storage[[f]] <- tmp
+  load(f)
+  storage[[f]] <- corMat
 }
 
 corMats <- rbindlist(storage, use.names = TRUE)
