@@ -25,6 +25,8 @@ timeSeriesData <- empirical1000 %>%
 
 timeSeriesData <- as.matrix(timeSeriesData)
 
+timeSeriesData[is.na(timeSeriesData)] <- ""
+
 #-------
 # labels
 #-------
