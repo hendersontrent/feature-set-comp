@@ -18,25 +18,12 @@ load("data/empirical1000.Rda")
 # timeSeriesData
 #---------------
 
-uniqueIDs <- empirical1000 %>% 
-  dplyr::select(c(id)) %>% 
-  distinct() %>% 
-  pull(id)
+timeSeriesData <- empirical1000 %>%
+  dplyr::select(c(id, timepoint, value)) %>%
+  pivot_wider(id_cols = "id", names_from = "timepoint", values_from = "value") %>%
+  dplyr::select(-c(id))
 
-timeSeriesData <- list()
-
-for(i in 1:length(uniqueIDs)){
-  
-  message(paste0("Doing ID: ",i))
-  
-  tmp <- empirical1000 %>%
-    filter(id == i) %>%
-    dplyr::select(c(timepoint, value)) %>%
-    arrange(timepoint) %>%
-    pull(value)
-  
-  timeSeriesData[[i]] <- list(tmp)
-}
+timeSeriesData <- as.matrix(timeSeriesData)
 
 #-------
 # labels
@@ -44,19 +31,10 @@ for(i in 1:length(uniqueIDs)){
 
 # Get unique list of IDs
 
-uniquelabels <- empirical1000 %>% 
+labels <- c(empirical1000 %>% 
   dplyr::select(c(Name)) %>% 
   distinct() %>% 
-  pull(Name)
-
-# Append into a list like how hctsa needs
-
-labels <- list()
-
-for(i in 1:length(uniquelabels)){
-  
-  labels[[i]] <- list(uniquelabels[1])
-}
+  pull(Name))
 
 #---------
 # keywords
@@ -64,19 +42,10 @@ for(i in 1:length(uniquelabels)){
 
 # Get unique list of keywords arranged by ID
 
-uniquekeywords <- empirical1000 %>% 
+keywords <- c(empirical1000 %>% 
   dplyr::select(c(Name, Keywords)) %>% 
   distinct() %>% 
-  pull(Keywords)
-
-# Append into a list like how hctsa needs
-
-keywords <- list()
-
-for(i in 1:length(uniquekeywords)){
-  
-  keywords[[i]] <- list(uniquelabels[1])
-}
+  pull(Keywords))
 
 #--------------------------
 # Merge together and export
