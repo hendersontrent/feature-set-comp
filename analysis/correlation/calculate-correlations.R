@@ -16,8 +16,8 @@ load("data/Emp1000FeatMat.Rda")
 
 # Load hctsa results
 
-source("webscraping/pull_hctsa_results.R")
-hctsa <- pull_hctsa_results() 
+source("R/process_hctsa_csv.R")
+hctsa <- process_hctsa_csv() 
 
 # Merge together and remove erroneous duplicates
 
@@ -25,30 +25,21 @@ fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa) %>%
   dplyr::select(c(id, names, method, values)) %>%
   distinct()
 
-# Retain only datasets on which all feature sets successfully computed
-
-source("R/utility_functions.R")
-
-good_datasets <- get_consistent_datasets()
-
-fullFeatMat_filt <- fullFeatMat %>%
-  filter(id %in% good_datasets)
-
 # Filter to only datasets that every individual feature computed on
 
-good_ind_datasets <- get_consistent_datasets_feats(fullFeatMat_filt)
+good_ind_datasets <- get_consistent_datasets_feats(fullFeatMat)
 
-fullFeatMat_filt2 <- fullFeatMat_filt %>%
+fullFeatMat_filt <- fullFeatMat %>%
   filter(id %in% good_ind_datasets)
 
 # Normalise features
 
-normed <- normalise_feature_frame(fullFeatMat_filt2, names_var = "names", values_var = "values",
+normed <- normalise_feature_frame(fullFeatMat_filt, names_var = "names", values_var = "values",
                                   method = "z-score")
 
 # Clean up environment
 
-rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt, fullFeatMat_filt2)
+rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt)
 
 #-------------- Compute correlations ----------------
 
