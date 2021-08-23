@@ -23,6 +23,7 @@ library(Cairo)
 library(reticulate)
 library(broom)
 library(microbenchmark)
+library(R.matlab)
 
 # Create important folders if none exist
 
