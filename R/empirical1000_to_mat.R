@@ -18,7 +18,25 @@ load("data/empirical1000.Rda")
 # timeSeriesData
 #---------------
 
-timeSeriesData <- empirical1000
+uniqueIDs <- empirical1000 %>% 
+  dplyr::select(c(id)) %>% 
+  distinct() %>% 
+  pull(id)
+
+timeSeriesData <- list()
+
+for(i in 1:length(uniqueIDs)){
+  
+  message(paste0("Doing ID: ",i))
+  
+  tmp <- empirical1000 %>%
+    filter(id == i) %>%
+    dplyr::select(c(timepoint, value)) %>%
+    arrange(timepoint) %>%
+    pull(value)
+  
+  timeSeriesData[[i]] <- list(tmp)
+}
 
 #-------
 # labels
