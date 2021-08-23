@@ -50,3 +50,7 @@ output/*
 # Mac OS
 
 .DS_Store
+
+# MATLAB files
+
+.mat
