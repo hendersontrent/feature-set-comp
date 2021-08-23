@@ -25,6 +25,8 @@ for(f in files){
 
 corMats <- rbindlist(storage, use.names = TRUE)
 
+rm(corMat, storage)
+
 #------------------ Calculations --------------------
 
 # Get feature set labels
