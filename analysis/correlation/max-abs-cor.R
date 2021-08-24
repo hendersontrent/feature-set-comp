@@ -35,6 +35,8 @@ corMats2 <- corMats %>%
   mutate(feature_set_source = gsub("_.*", "\\1", V1),
          feature_set_target = gsub("_.*", "\\1", V2))
 
+rm(corMats)
+
 # Compute mean maximum absolute correlation between each feature set
 
 mean_maxabscors <- corMats2 %>%
