@@ -37,7 +37,13 @@ corMats2 <- corMats %>%
 
 rm(corMats)
 
-# Compute mean maximum absolute correlation between each feature set
+#------------------------------
+# Compute mean maximum absolute 
+# correlation between each 
+# feature set
+#------------------------------
+
+# Part I
 
 mean_maxabscors <- corMats2 %>%
   mutate(correlation = abs(correlation)) %>%
@@ -48,11 +54,20 @@ mean_maxabscors <- corMats2 %>%
   summarise(correlation = mean(max, na.rm = TRUE)) %>%
   ungroup()
 
-mean_maxabscors2 <- mean_maxabscors %>%
+# Part II (asymmetric matrix)
+
+mean_maxabscors2 <- corMats2 %>%
+  mutate(correlation = abs(correlation)) %>%
+  group_by(V2, feature_set_source, feature_set_target) %>%
+  summarise(max = max(correlation, na.rm = TRUE)) %>%
+  filter_all(all_vars(!is.infinite(.))) %>%
+  group_by(feature_set_source, feature_set_target) %>%
+  summarise(correlation = mean(max, na.rm = TRUE)) %>%
+  ungroup() %>%
   rename(V1 = 1,
          V2 = 2) %>%
   rename(feature_set_source = V2,
-         feature_set_target = 1) # For other matrix diagonal
+         feature_set_target = V1)
 
 # Compute min absolute correlation between each feature set
 
@@ -65,11 +80,18 @@ min_abscors <- corMats2 %>%
   summarise(correlation = min(min, na.rm = TRUE)) %>%
   ungroup()
 
-min_abscors2 <- min_abscors %>%
+min_abscors2 <- corMats2 %>%
+  mutate(correlation = abs(correlation)) %>%
+  group_by(V2, feature_set_source, feature_set_target) %>%
+  summarise(min = min(correlation, na.rm = TRUE)) %>%
+  filter_all(all_vars(!is.infinite(.))) %>%
+  group_by(feature_set_source, feature_set_target) %>%
+  summarise(correlation = min(min, na.rm = TRUE)) %>%
+  ungroup() %>%
   rename(V1 = 1,
          V2 = 2) %>%
   rename(feature_set_source = V2,
-         feature_set_target = 1) # For other matrix diagonal
+         feature_set_target = V1)
 
 # Impute self-correlations for matrix graphic
 
