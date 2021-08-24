@@ -50,7 +50,23 @@ p1 <- corMat2 %>%
 
 print(p1)
 
+# Do just highly correlated features
+
+p2 <- corMat2 %>%
+  filter(max > 0.90) %>%
+  ggplot(aes(x = reorder(V1, -max), y = max)) +
+  geom_bar(stat = "identity") +
+  labs(title = "tsfresh maximum absolute correlation by feature with hctsa",
+       subtitle = "Only features with > 0.9 max. abs. correlation",
+       x = "tsfresh Feature",
+       y = "Max. Abs. Correlation") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90))
+
+print(p2)
+
 # Save outputs
 
 ggsave("output/tsfresh-hctsa-dist.png", p)
 ggsave("output/tsfresh-hctsa-unique.png", p1, units = "in", width = 15, height = 11)
+ggsave("output/tsfresh-hctsa-high-cor.png", p2, units = "in", width = 15, height = 11)
