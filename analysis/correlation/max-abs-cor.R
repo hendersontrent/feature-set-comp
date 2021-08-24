@@ -12,54 +12,85 @@
 
 # Get list of available pairwise correlation datafiles and bind together
 
-files <- list.files("data/corMat", 
+files <- list.files("data/corMats", 
                     full.names = TRUE, pattern = "\\.Rda", all.files = TRUE)
 
 storage <- list()
 
 for(f in files){
   
-  tmp <- load(f)
-  storage[[f]] <- tmp
+  load(f)
+  storage[[f]] <- corMat
 }
 
 corMats <- rbindlist(storage, use.names = TRUE)
+
+rm(corMat, storage, f, files)
 
 #------------------ Calculations --------------------
 
 # Get feature set labels
 
-corMats <- corMats %>%
+corMats2 <- corMats %>%
   mutate(feature_set_source = gsub("_.*", "\\1", V1),
          feature_set_target = gsub("_.*", "\\1", V2))
 
+rm(corMats)
+
 # Compute mean maximum absolute correlation between each feature set
 
-mean_maxabscors <- corMats
+mean_maxabscors <- corMats2 %>%
+  mutate(correlation = abs(correlation)) %>%
+  group_by(V1, feature_set_source, feature_set_target) %>%
+  summarise(max = max(correlation, na.rm = TRUE)) %>%
+  filter_all(all_vars(!is.infinite(.))) %>%
+  group_by(feature_set_source, feature_set_target) %>%
+  summarise(correlation = mean(max, na.rm = TRUE)) %>%
+  ungroup()
+
+mean_maxabscors2 <- mean_maxabscors %>%
+  rename(V1 = 1,
+         V2 = 2) %>%
+  rename(feature_set_source = V2,
+         feature_set_target = 1) # For other matrix diagonal
 
 # Compute min absolute correlation between each feature set
 
-min_maxabscors <- corMats
+min_abscors <- corMats2 %>%
+  mutate(correlation = abs(correlation)) %>%
+  group_by(V1, feature_set_source, feature_set_target) %>%
+  summarise(min = min(correlation, na.rm = TRUE)) %>%
+  filter_all(all_vars(!is.infinite(.))) %>%
+  group_by(feature_set_source, feature_set_target) %>%
+  summarise(correlation = min(min, na.rm = TRUE)) %>%
+  ungroup()
+
+min_abscors2 <- min_abscors %>%
+  rename(V1 = 1,
+         V2 = 2) %>%
+  rename(feature_set_source = V2,
+         feature_set_target = 1) # For other matrix diagonal
 
 # Impute self-correlations for matrix graphic
 
-selfcors <- data.frame(V1 = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL"),
-                       V2 = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL"),
-                       maxcor = c(1, 1, 1, 1, 1, 1))
+selfcors <- data.frame(feature_set_source = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL", "hctsa"),
+                       feature_set_target = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL", "hctsa"),
+                       correlation = c(1, 1, 1, 1, 1, 1, 1))
 
-mean_maxabscors <- bind_rows(mean_maxabscors, selfcors)
-min_maxabscors <- bind_rows(min_maxabscors, selfcors)
+mean_maxabscors <- bind_rows(mean_maxabscors, mean_maxabscors2, selfcors)
+min_abscors <- bind_rows(min_abscors, min_abscors2, selfcors)
 
 #------------------ Graphical summary ---------------
 
 # Mean
 
 p <- mean_maxabscors %>%
-  ggplot(aes(x = V1, y = V1, fill = maxcor)) +
-  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity", alpha = 0.7) +
-  geom_text(aes(label = round(maxcor, digits = 2)), colour = "white") +
+  ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
+  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
+  geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
   labs(x = "Feature Set",
-       y = "Feature Set") +
+       y = "Feature Set",
+       fill = "Mean Max. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
   theme(legend.position = "bottom")
@@ -68,14 +99,20 @@ print(p)
 
 # Min
 
-p1 <- min_maxabscors %>%
-  ggplot(aes(x = V1, y = V2, fill = maxcor)) +
-  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity", alpha = 0.7) +
-  geom_text(aes(label = round(maxcor, digits = 2)), colour = "white") +
+p1 <- min_abscors %>%
+  ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
+  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
+  geom_text(aes(label = round(correlation, digits = 2)), colour = "white") +
   labs(x = "Feature Set",
-       y = "Feature Set") +
+       y = "Feature Set",
+       fill = "Min. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
   theme(legend.position = "bottom")
 
 print(p1)
+
+# Save plots
+
+ggsave("output/mean-max-abs-cor.png", p)
+ggsave("output/min-abs-cor.png", p1)
