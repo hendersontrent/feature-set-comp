@@ -27,6 +27,7 @@ fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa) %>%
 
 # Filter to only datasets that every individual feature computed on
 
+source("R/utility_functions.R")
 good_ind_datasets <- get_consistent_datasets_feats(fullFeatMat)
 
 fullFeatMat_filt <- fullFeatMat %>%
