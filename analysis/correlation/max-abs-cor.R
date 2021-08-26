@@ -104,14 +104,24 @@ min_abscors <- bind_rows(min_abscors, min_abscors2, selfcors)
 
 #------------------ Graphical summary ---------------
 
+#-----
 # Mean
+#-----
+
+# Convert to factor prior to plotting for easier interpretation
 
 p <- mean_maxabscors %>%
+  mutate(feature_set_source = factor(feature_set_source, 
+                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
+                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
+  mutate(feature_set_target = factor(feature_set_target, 
+                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
+                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
-  labs(x = "Feature Set",
-       y = "Feature Set",
+  labs(x = "Test",
+       y = "Benchmark",
        fill = "Mean Max. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
@@ -119,14 +129,16 @@ p <- mean_maxabscors %>%
 
 print(p)
 
+#----
 # Min
+#----
 
 p1 <- min_abscors %>%
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   geom_text(aes(label = round(correlation, digits = 2)), colour = "white") +
-  labs(x = "Feature Set",
-       y = "Feature Set",
+  labs(x = "Test",
+       y = "Benchmark",
        fill = "Min. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
@@ -134,7 +146,59 @@ p1 <- min_abscors %>%
 
 print(p1)
 
+#------------------
+# Mean as a network
+#------------------
+
+# Remove self-correlations
+
+graphDat <- mean_maxabscors %>%
+  filter(feature_set_source != feature_set_target)
+
+# Set up node and edge data
+
+edges <- graphDat %>%
+  rename(from = feature_set_source,
+         to = feature_set_target,
+         weight = correlation) %>%
+  mutate(weight = ifelse(weight >= 0.8, weight*1.75, weight)) # For graphical emphasis
+
+nodes <- graphDat %>%
+  dplyr::select(c(feature_set_source)) %>%
+  distinct() %>%
+  rename(id = feature_set_source)
+
+# Set up graph design
+
+links <- aggregate(edges[,3], edges[,-3], sum)
+links <- links[order(links$from, links$to),]
+colnames(links)[3] <- "weight"
+rownames(links) <- NULL
+
+net <- graph_from_data_frame(d = links, vertices = nodes, directed = T)
+
+# Draw plot
+
+V(net)$size <- 40
+V(net)$frame.color <- "white"
+V(net)$color <- "#7570B3"
+E(net)$color <- ifelse(E(net)$weight >= 0.8, 'black', 'gray50')
+E(net)$width <- E(net)$weight*2.5
+mylayout <- layout_with_fr(net)
+
+png("output/network.png", 800, 600)
+plot(net, mark.groups = c(2,3,4), mark.col = "#d1ebe3", mark.border = NA,
+     layout = mylayout, vertex.label.color = "white",
+     edge.curved = .3, edge.arrow.size = .8)
+legend("bottomleft", legend = c("rho >= 0.8", "rho < 0.8"))
+
+dev.off()
+
+#-----------
 # Save plots
+#-----------
 
 ggsave("output/mean-max-abs-cor.png", p)
+ggsave("output/mean-max-abs-cor.svg", p)
+ggsave("output/mean-max-abs-cor.pdf", p)
 ggsave("output/min-abs-cor.png", p1)
