@@ -146,7 +146,53 @@ p1 <- min_abscors %>%
 
 print(p1)
 
+#------------------
+# Mean as a network
+#------------------
+
+# Remove self-correlations
+
+graphDat <- mean_maxabscors %>%
+  filter(feature_set_source != feature_set_target)
+
+# Set up node and edge data
+
+edges <- graphDat %>%
+  rename(from = feature_set_source,
+         to = feature_set_target,
+         weight = correlation) %>%
+  mutate(weight = weight*10)
+
+nodes <- graphDat %>%
+  dplyr::select(c(feature_set_source)) %>%
+  distinct() %>%
+  rename(id = feature_set_source)
+
+# Set up graph design
+
+links <- aggregate(edges[,3], edges[,-3], sum)
+links <- links[order(links$from, links$to),]
+colnames(links)[3] <- "weight"
+rownames(links) <- NULL
+
+net <- graph_from_data_frame(d = links, vertices = nodes, directed = T)
+
+# Draw plot
+
+V(net)$size <- 40
+V(net)$frame.color <- "white"
+V(net)$color <- "#7570B3"
+E(net)$width <- E(net)$weight/4
+
+mylayout <- layout_with_fr(net)
+
+plot(net, mark.groups = c(2,3,4), mark.col = "#d1ebe3", mark.border = NA,
+     edge.arrow.size = .8, layout = mylayout,
+     vertex.label.color = "white")
+
+#-----------
 # Save plots
+#-----------
 
 ggsave("output/mean-max-abs-cor.png", p)
 ggsave("output/mean-max-abs-cor.svg", p)
