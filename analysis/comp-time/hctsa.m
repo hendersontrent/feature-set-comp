@@ -21,4 +21,4 @@ for i = 1:numFiles
     timeTaken(i) = toc;
 end
 
-csvwrite('/Users/trenthenderson/Documents/Git/feature-set-comp/output/comptime/outputTimes.csv','timeTaken');
+csvwrite('/Users/trenthenderson/Documents/Git/feature-set-comp/output/comptime/outputTimes.csv',timeTaken);
