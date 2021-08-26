@@ -120,8 +120,8 @@ p <- mean_maxabscors %>%
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
-  labs(x = "Feature Set",
-       y = "Feature Set",
+  labs(x = "Test",
+       y = "Benchmark",
        fill = "Mean Max. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
@@ -137,8 +137,8 @@ p1 <- min_abscors %>%
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   geom_text(aes(label = round(correlation, digits = 2)), colour = "white") +
-  labs(x = "Feature Set",
-       y = "Feature Set",
+  labs(x = "Test",
+       y = "Benchmark",
        fill = "Min. Abs. Correlation") +
   scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
   theme_bw() +
