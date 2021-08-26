@@ -106,15 +106,18 @@ track_comptime <- function(){
 }
 
 r_pkg_results <- track_comptime()
+write.csv(r_pkg_results, "output/comptime/R.csv")
 
 #-------------------
 # Read in results
 # for non-R packages
 #-------------------
 
+# Load files and remove anomalous entries
+
 kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
-tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.12)
 
 # Add columns to hctsa vector of times
 

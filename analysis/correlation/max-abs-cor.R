@@ -104,9 +104,19 @@ min_abscors <- bind_rows(min_abscors, min_abscors2, selfcors)
 
 #------------------ Graphical summary ---------------
 
+#-----
 # Mean
+#-----
+
+# Convert to factor prior to plotting for easier interpretation
 
 p <- mean_maxabscors %>%
+  mutate(feature_set_source = factor(feature_set_source, 
+                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
+                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
+  mutate(feature_set_target = factor(feature_set_target, 
+                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
+                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
   geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
@@ -119,7 +129,9 @@ p <- mean_maxabscors %>%
 
 print(p)
 
+#----
 # Min
+#----
 
 p1 <- min_abscors %>%
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
@@ -137,4 +149,6 @@ print(p1)
 # Save plots
 
 ggsave("output/mean-max-abs-cor.png", p)
+ggsave("output/mean-max-abs-cor.svg", p)
+ggsave("output/mean-max-abs-cor.pdf", p)
 ggsave("output/min-abs-cor.png", p1)
