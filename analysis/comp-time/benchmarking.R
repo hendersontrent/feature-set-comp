@@ -112,9 +112,20 @@ r_pkg_results <- track_comptime()
 # for non-R packages
 #-------------------
 
-kats_results <- readr::read_csv("output/comptime/kats.csv")
+kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
 tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
+
+# Add columns to hctsa vector of times
+
+thelengths <- c(100, 100, 100, 100, 100, 250, 250, 250, 250, 250,
+                500, 500, 500, 500, 500, 750, 750, 750, 750, 750,
+                1000, 1000, 1000, 1000, 1000)
+
+hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = FALSE) %>% 
+  rename(mean = X1) %>%
+  mutate(feature_set = "hctsa",
+         ts_length = thelengths)
 
 #-------------------
 # Bind all together
@@ -124,7 +135,7 @@ tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
 # length
 #-------------------
 
-all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results) %>%
+all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
   group_by(feature_set, ts_length) %>%
   summarise(mean = mean(mean)) %>%
   ungroup()
@@ -139,11 +150,8 @@ p <- all_comptimes %>%
        y = "Computation Time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
-  # scale_x_continuous(limits = c(100, 1000),
-  #                    breaks = c(100, 250, 500, 750, 1000)) +
-  scale_x_log10(limits = c(1e2, 1e3),
-                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 4),
-                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  scale_x_log10(breaks = c(1e2, 1e3),
+                labels = trans_format("log10", label_math())) +
   scale_y_log10(limits = c(1e-3, 1e1),
                 breaks = scales::trans_breaks("log10", function(x) 10^x, n = 5),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
@@ -155,3 +163,4 @@ print(p)
 
 ggsave("output/comp-time.png", p)
 ggsave("output/comp-time.svg", p)
+ggsave("output/comp-time.pdf", p)
