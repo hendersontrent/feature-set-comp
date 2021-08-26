@@ -160,8 +160,7 @@ graphDat <- mean_maxabscors %>%
 edges <- graphDat %>%
   rename(from = feature_set_source,
          to = feature_set_target,
-         weight = correlation) %>%
-  mutate(weight = weight*10)
+         weight = correlation)
 
 nodes <- graphDat %>%
   dplyr::select(c(feature_set_source)) %>%
@@ -182,13 +181,16 @@ net <- graph_from_data_frame(d = links, vertices = nodes, directed = T)
 V(net)$size <- 40
 V(net)$frame.color <- "white"
 V(net)$color <- "#7570B3"
-E(net)$width <- E(net)$weight/4
-
+E(net)$color <- ifelse(E(net)$weight >= 0.8,'black', 'gray50')
+E(net)$width <- E(net)$weight*2.5
 mylayout <- layout_with_fr(net)
 
+png("output/network.png", 800, 600)
 plot(net, mark.groups = c(2,3,4), mark.col = "#d1ebe3", mark.border = NA,
-     edge.arrow.size = .8, layout = mylayout,
-     vertex.label.color = "white")
+     layout = mylayout, vertex.label.color = "white",
+     edge.curved = .3, edge.arrow.size = .8)
+legend("bottomleft", legend = c("rho >= 0.8", "rho < 0.8"))
+dev.off()
 
 #-----------
 # Save plots
