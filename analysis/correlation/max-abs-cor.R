@@ -69,30 +69,6 @@ mean_maxabscors2 <- corMats2 %>%
   rename(feature_set_source = V2,
          feature_set_target = V1)
 
-# Compute min absolute correlation between each feature set
-
-min_abscors <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V1, feature_set_source, feature_set_target) %>%
-  summarise(min = min(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = min(min, na.rm = TRUE)) %>%
-  ungroup()
-
-min_abscors2 <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V2, feature_set_source, feature_set_target) %>%
-  summarise(min = min(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = min(min, na.rm = TRUE)) %>%
-  ungroup() %>%
-  rename(V1 = 1,
-         V2 = 2) %>%
-  rename(feature_set_source = V2,
-         feature_set_target = V1)
-
 # Impute self-correlations for matrix graphic
 
 selfcors <- data.frame(feature_set_source = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL", "hctsa"),
@@ -100,7 +76,6 @@ selfcors <- data.frame(feature_set_source = c("catch22", "feasts", "tsfeatures",
                        correlation = c(1, 1, 1, 1, 1, 1, 1))
 
 mean_maxabscors <- bind_rows(mean_maxabscors, mean_maxabscors2, selfcors)
-min_abscors <- bind_rows(min_abscors, min_abscors2, selfcors)
 
 #------------------ Graphical summary ---------------
 
@@ -123,28 +98,11 @@ p <- mean_maxabscors %>%
   labs(x = "Test",
        y = "Benchmark",
        fill = "Mean Max. Abs. Correlation") +
-  scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
+  scale_fill_distiller(palette = "RdPu", direction = 1) +
   theme_bw() +
   theme(legend.position = "bottom")
 
 print(p)
-
-#----
-# Min
-#----
-
-p1 <- min_abscors %>%
-  ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
-  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
-  geom_text(aes(label = round(correlation, digits = 2)), colour = "white") +
-  labs(x = "Test",
-       y = "Benchmark",
-       fill = "Min. Abs. Correlation") +
-  scale_fill_stepsn(n.breaks = 6, colours = rev(RColorBrewer::brewer.pal(6, "RdYlBu"))) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-print(p1)
 
 #------------------
 # Mean as a network
@@ -201,4 +159,3 @@ dev.off()
 ggsave("output/mean-max-abs-cor.png", p)
 ggsave("output/mean-max-abs-cor.svg", p)
 ggsave("output/mean-max-abs-cor.pdf", p)
-ggsave("output/min-abs-cor.png", p1)
