@@ -153,7 +153,8 @@ p <- pca_results %>%
        y = "Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p)
 
@@ -171,13 +172,14 @@ p1 <- pca_results %>%
        y = "Cumulative Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p1)
 
 # Save plots
 
-ggsave("output/pca-scaled.png", p)
-ggsave("output/pca-scaled.svg", p)
-ggsave("output/pca-cumsum-scaled.png", p1)
-ggsave("output/pca-cumsum-scaled.svg", p1)
+ggsave("output/pca-scaled.png", p, units = "in", height = 10, width = 10)
+ggsave("output/pca-scaled.svg", p, units = "in", height = 10, width = 10)
+ggsave("output/pca-cumsum-scaled.png", p1, units = "in", height = 10, width = 10)
+ggsave("output/pca-cumsum-scaled.svg", p1, units = "in", height = 10, width = 10)
