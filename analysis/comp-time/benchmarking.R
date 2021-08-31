@@ -122,7 +122,7 @@ kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
 tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.12)
 
-# Add columns to hctsa vector of times
+# Add vector of times to hctsa results
 
 thelengths <- c(100, 100, 100, 100, 100, 250, 250, 250, 250, 250,
                 500, 500, 500, 500, 500, 750, 750, 750, 750, 750,
@@ -142,17 +142,36 @@ hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = 
 #-------------------
 
 all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
-  group_by(feature_set, ts_length) %>%
-  summarise(mean = mean(mean)) %>%
-  ungroup()
+  mutate(feature_set_feats = case_when(
+          feature_set == "catch22"    ~ "catch22 (22)",
+          feature_set == "feasts"     ~ "feasts (43)",
+          feature_set == "hctsa"      ~ "hctsa (7300)",
+          feature_set == "Kats"       ~ "Kats (40)",
+          feature_set == "tsfeatures" ~ "tsfeatures (62)",
+          feature_set == "TSFEL"      ~ "TSFEL (285-390)",
+          feature_set == "tsfresh"    ~ "tsfresh (779)"))
 
 #------------------ Graphical summary ---------------
 
+#---------
+# Raw time
+#---------
+
 p <- all_comptimes %>%
+  group_by(feature_set, feature_set_feats, ts_length) %>%
+  summarise(avg = mean(mean),
+            sd = sd(mean)) %>%
+  ungroup() %>%
+  rename(mean = avg) %>%
+  mutate(lower = mean - (1.96*sd),
+         upper = mean + (1.96*sd)) %>%
+  mutate(lower = ifelse(lower < 0 , 0.001, lower)) %>%
   ggplot() +
-  geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +
-  geom_point(aes(x = ts_length, y = mean, colour = feature_set), size = 2) +
-  labs(x = "Time Series Length",
+  geom_line(aes(x = ts_length, y = mean, colour = feature_set_feats)) +
+  geom_errorbar(aes(x = ts_length, y = mean, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = mean, colour = feature_set_feats), size = 2) +
+  labs(subtitle = "A",
+       x = "Time Series Length (samples)",
        y = "Computation Time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
@@ -163,10 +182,57 @@ p <- all_comptimes %>%
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
-        legend.position = "bottom")
+        legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p)
 
-ggsave("output/comp-time.png", p)
-ggsave("output/comp-time.svg", p)
+#-------
+# Scaled
+#-------
+
+p1 <- all_comptimes %>%
+  mutate(mean_scaled = case_when(
+          feature_set == "catch22"                   ~ mean/22,
+          feature_set == "feasts"                    ~ mean/43,
+          feature_set == "hctsa"                     ~ mean/7300,
+          feature_set == "Kats"                      ~ mean/40,
+          feature_set == "tsfeatures"                ~ mean/22,
+          feature_set == "tsfresh"                   ~ mean/779,
+          feature_set == "TSFEL" & ts_length == 100  ~ mean/285,
+          feature_set == "TSFEL" & ts_length == 250  ~ mean/285,
+          feature_set == "TSFEL" & ts_length >= 500  ~ mean/390)) %>%
+  group_by(feature_set, feature_set_feats, ts_length) %>%
+  summarise(mean = mean(mean_scaled),
+            sd = sd(mean_scaled)) %>%
+  ungroup() %>%
+  mutate(lower = mean - (1.96*sd),
+         upper = mean + (1.96*sd)) %>%
+  ggplot() +
+  geom_line(aes(x = ts_length, y = mean, colour = feature_set_feats)) +
+  geom_errorbar(aes(x = ts_length, y = mean, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = mean, colour = feature_set_feats), size = 2) +
+  labs(subtitle = "B",
+       x = "Time Series Length (samples)",
+       y = "Computation Time per Feature (s)",
+       colour = NULL) +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_log10(labels = trans_format("log10", label_math())) +
+  scale_x_log10(breaks = c(1e2, 1e3),
+                labels = trans_format("log10", label_math())) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 18))
+
+print(p1)
+
+# Save outputs
+
+ggsave("output/comp-time.png", p, units = "in", height = 10, width = 10)
+ggsave("output/comp-time.svg", p, units = "in", height = 10, width = 10)
 ggsave("output/comp-time.pdf", p)
+
+CairoPNG("output/comp-time-merged.png", 900, 900)
+ggpubr::ggarrange(p, p1, nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom")
+dev.off()
