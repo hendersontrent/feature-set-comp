@@ -11,16 +11,18 @@
 
 #------------------ Benchmark calculations ----------
 
-#-------------------
+#---------------
 # Compute times
 # for R packages
-#-------------------
+#---------------
 
 #' Function to track computation time for Rcatch22, feasts, and tsfeatures
 #' 
 #' @return an object of class dataframe
 #' @author Trent Henderson
 #' 
+
+# NOTE: ONLY RUN THIS IF "output/comptime/R.csv" DOES NOT EXIST!
 
 track_comptime <- function(){
   
@@ -115,6 +117,7 @@ write.csv(r_pkg_results, "output/comptime/R.csv")
 
 # Load files and remove anomalous entries
 
+r_pkg_results <- readr::read_csv("output/comptime/R.csv") # Only run this if it has been created
 kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
 tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.12)
@@ -155,8 +158,8 @@ p <- all_comptimes %>%
   scale_colour_brewer(palette = "Dark2") +
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
-  scale_y_log10(limits = c(1e-3, 1e1),
-                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 5),
+  scale_y_log10(limits = c(1e-3, 1e2),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
