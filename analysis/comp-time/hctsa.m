@@ -16,9 +16,9 @@ numFiles = length(fileNamesToRead);
 timeTaken = nan(numFiles,1);
 for i = 1:numFiles
     X = dlmread(fileNamesToRead{i});
-    tic;
+    timer = tic;
     TS_CalculateFeatureVector(X,false,Operations,MasterOperations,false,false);
-    timeTaken(i) = toc;
+    timeTaken(i) = toc(timer);
 end
 
 csvwrite('/Users/trenthenderson/Documents/Git/feature-set-comp/output/comptime/outputTimes.csv',timeTaken);
