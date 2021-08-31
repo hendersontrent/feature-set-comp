@@ -183,7 +183,8 @@ p <- all_comptimes %>%
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
-        text = element_text(size = 18))
+        text = element_text(size = 18),
+        plot.subtitle = element_text(face = "bold"))
 
 print(p)
 
@@ -223,7 +224,8 @@ p1 <- all_comptimes %>%
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
-        text = element_text(size = 18))
+        text = element_text(size = 18),
+        plot.subtitle = element_text(face = "bold"))
 
 print(p1)
 
