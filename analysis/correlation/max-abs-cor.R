@@ -94,13 +94,14 @@ p <- mean_maxabscors %>%
                                                 "hctsa", "TSFEL", "tsfresh"))) %>% 
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
-  geom_text(aes(label = round(correlation, digits = 2)), colour = "black", fontface = "bold") +
+  geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
   labs(x = "Test",
        y = "Benchmark",
-       fill = expression(r[max])) +
-  scale_fill_distiller(palette = "RdBu") +
+       fill = TeX("$|\\rho_{max}|$")) +
+  scale_fill_distiller(palette = "PuBu", direction = 1) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p)
 
@@ -156,6 +157,6 @@ dev.off()
 # Save plots
 #-----------
 
-ggsave("output/mean-max-abs-cor.png", p, units = "in", height = 8.5, width = 8.5)
-ggsave("output/mean-max-abs-cor.svg", p, units = "in", height = 8.5, width = 8.5)
+ggsave("output/mean-max-abs-cor.png", p, units = "in", height = 10, width = 10)
+ggsave("output/mean-max-abs-cor.svg", p, units = "in", height = 10, width = 10)
 ggsave("output/mean-max-abs-cor.pdf", p)

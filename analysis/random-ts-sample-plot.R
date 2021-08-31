@@ -14,29 +14,36 @@
 
 load("data/empirical1000.Rda")
 
-# Get a random sample of 6 time series
+# Plot 6 time series from different domains
 
-set.seed(1234)
-theids <- unique(empirical1000$id)
-sampleIDs <- sample(theids, 6)
+sampleIDs <- c("FL_fbruss_L300_N10000_IC_0.3_2_y.dat", "MP_predprey_L5000_IC_0.5_0.55_x.dat", 
+               "ME_winter_rf.dat", "MD_gaitpdb_GaCo05_01l_SNIP_1256-2955.dat", 
+               "CM_tpi_hob.dat", "AS_s2.1_f4_b8_l8280_135971.dat")
 
 mySamples <- empirical1000 %>%
-  filter(id %in% sampleIDs)
+  filter(Name %in% sampleIDs) %>%
+  mutate(name_clean = case_when(
+          Name == "AS_s2.1_f4_b8_l8280_135971.dat"           ~ "A. Animal Sounds",
+          Name == "CM_tpi_hob.dat"                           ~ "B. Trans Polar Index",
+          Name == "FL_fbruss_L300_N10000_IC_0.3_2_y.dat"     ~ "C. Over-sampled ODE System",
+          Name == "MD_gaitpdb_GaCo05_01l_SNIP_1256-2955.dat" ~ "D. Parkinson's Disease Gait",
+          Name == "ME_winter_rf.dat"                         ~ "E. Winter River Flow",
+          Name == "MP_predprey_L5000_IC_0.5_0.55_x.dat"      ~ "F. Discrete Map"))
 
 # Draw plot
 
 p <- mySamples %>%
-  ggplot(aes(x = timepoint, y = value, colour = Keywords)) +
+  ggplot(aes(x = timepoint, y = value)) +
   geom_line() +
   labs(x = "Time",
-       y = "Value",
-       colour = NULL) +
-  scale_color_brewer(palette = "Dark2") +
+       y = "Value") +
   theme_bw() +
-  theme(legend.position = "bottom") +
-  facet_wrap(~Name, scales = "free", ncol = 2)
+  theme(strip.text = element_text(face = "bold"),
+        text = element_text(size = 18)) +
+  facet_wrap(~name_clean, scales = "free", ncol = 2)
 
 print(p)
 
-ggsave("output/sample-ts.png", p)
-ggsave("output/sample-ts.svg", p)
+ggsave("output/sample-ts.png", p, units = "in", height = 10, width = 10)
+ggsave("output/sample-ts.svg", p, units = "in", height = 10, width = 10)
+ggsave("output/sample-ts.pdf", p)
