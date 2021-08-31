@@ -9,6 +9,7 @@ fileNamesToRead = {'/Users/trenthenderson/Documents/Git/feature-set-comp/data/si
 Operations = SQL_Add('ops','INP_ops.txt',false,false);
 MasterOperations = SQL_Add('mops','INP_mops.txt',false,false);
 [Operations,MasterOperations] = TS_LinkOperationsWithMasters(Operations,MasterOperations);
+TS_InitiateParallel(false)
 
 % Loop over files and track computation time
 
@@ -17,7 +18,7 @@ timeTaken = nan(numFiles,1);
 for i = 1:numFiles
     X = dlmread(fileNamesToRead{i});
     timer = tic;
-    TS_CalculateFeatureVector(X,false,Operations,MasterOperations,false,false);
+    TS_CalculateFeatureVector(X,true,Operations,MasterOperations,false,false);
     timeTaken(i) = toc(timer);
 end
 
