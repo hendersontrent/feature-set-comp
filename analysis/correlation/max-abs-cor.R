@@ -69,70 +69,6 @@ mean_maxabscors2 <- corMats2 %>%
   rename(feature_set_source = V2,
          feature_set_target = V1)
 
-#------------------------------
-# Compute minimum maximum absolute 
-# correlation between each 
-# feature set
-#------------------------------
-
-# Part I
-
-min_maxabscors <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V1, feature_set_source, feature_set_target) %>%
-  summarise(max = max(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = min(max, na.rm = TRUE)) %>%
-  ungroup()
-
-# Part II (asymmetric matrix)
-
-min_maxabscors2 <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V2, feature_set_source, feature_set_target) %>%
-  summarise(max = max(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = min(max, na.rm = TRUE)) %>%
-  ungroup() %>%
-  rename(V1 = 1,
-         V2 = 2) %>%
-  rename(feature_set_source = V2,
-         feature_set_target = V1)
-
-#------------------------------
-# Compute median maximum absolute 
-# correlation between each 
-# feature set
-#------------------------------
-
-# Part I
-
-med_maxabscors <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V1, feature_set_source, feature_set_target) %>%
-  summarise(max = max(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = median(max, na.rm = TRUE)) %>%
-  ungroup()
-
-# Part II (asymmetric matrix)
-
-med_maxabscors2 <- corMats2 %>%
-  mutate(correlation = abs(correlation)) %>%
-  group_by(V2, feature_set_source, feature_set_target) %>%
-  summarise(max = max(correlation, na.rm = TRUE)) %>%
-  filter_all(all_vars(!is.infinite(.))) %>%
-  group_by(feature_set_source, feature_set_target) %>%
-  summarise(correlation = median(max, na.rm = TRUE)) %>%
-  ungroup() %>%
-  rename(V1 = 1,
-         V2 = 2) %>%
-  rename(feature_set_source = V2,
-         feature_set_target = V1)
-
 # Impute self-correlations for matrix graphic
 
 selfcors <- data.frame(feature_set_source = c("catch22", "feasts", "tsfeatures", "Kats", "tsfresh", "TSFEL", "hctsa"),
@@ -140,8 +76,6 @@ selfcors <- data.frame(feature_set_source = c("catch22", "feasts", "tsfeatures",
                        correlation = c(1, 1, 1, 1, 1, 1, 1))
 
 mean_maxabscors <- bind_rows(mean_maxabscors, mean_maxabscors2, selfcors)
-min_maxabscors <- bind_rows(min_maxabscors, min_maxabscors2, selfcors)
-med_maxabscors <- bind_rows(med_maxabscors, med_maxabscors2, selfcors)
 
 #------------------ Graphical summary ---------------
 
@@ -160,65 +94,15 @@ p <- mean_maxabscors %>%
                                                 "hctsa", "TSFEL", "tsfresh"))) %>% 
   ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
   geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
-  geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
+  geom_text(aes(label = round(correlation, digits = 2)), colour = "black", fontface = "bold") +
   labs(x = "Test",
        y = "Benchmark",
-       fill = "Mean Max. Abs. Correlation") +
-  scale_fill_distiller(palette = "RdPu", direction = 1) +
+       fill = expression(r[max])) +
+  scale_fill_distiller(palette = "RdBu") +
   theme_bw() +
   theme(legend.position = "bottom")
 
 print(p)
-
-#----------
-# Mean min
-#----------
-
-# Convert to factor prior to plotting for easier interpretation
-
-p1 <- min_maxabscors %>%
-  mutate(feature_set_source = factor(feature_set_source, 
-                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
-                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
-  mutate(feature_set_target = factor(feature_set_target, 
-                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
-                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
-  ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
-  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
-  geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
-  labs(x = "Test",
-       y = "Benchmark",
-       fill = "Min. Max. Abs. Correlation") +
-  scale_fill_distiller(palette = "RdPu", direction = 1) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-print(p1)
-
-#----------
-# Mean min
-#----------
-
-# Convert to factor prior to plotting for easier interpretation
-
-p2 <- med_maxabscors %>%
-  mutate(feature_set_source = factor(feature_set_source, 
-                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
-                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
-  mutate(feature_set_target = factor(feature_set_target, 
-                                     levels = c("catch22", "feasts", "Kats", "tsfeatures",
-                                                "hctsa", "TSFEL", "tsfresh"))) %>% 
-  ggplot(aes(x = feature_set_source, y = feature_set_target, fill = correlation)) +
-  geom_tile(aes(width = 0.9, height = 0.9), stat = "identity") +
-  geom_text(aes(label = round(correlation, digits = 2)), colour = "white", fontface = "bold") +
-  labs(x = "Test",
-       y = "Benchmark",
-       fill = "Median. Max. Abs. Correlation") +
-  scale_fill_distiller(palette = "RdPu", direction = 1) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-print(p2)
 
 #------------------
 # Mean as a network
@@ -272,9 +156,6 @@ dev.off()
 # Save plots
 #-----------
 
-ggsave("output/mean-max-abs-cor.png", p)
-ggsave("output/mean-max-abs-cor.svg", p)
+ggsave("output/mean-max-abs-cor.png", p, units = "in", height = 8.5, width = 8.5)
+ggsave("output/mean-max-abs-cor.svg", p, units = "in", height = 8.5, width = 8.5)
 ggsave("output/mean-max-abs-cor.pdf", p)
-
-ggsave("output/min-max-abs-cor.png", p1)
-ggsave("output/med-max-abs-cor.png", p2)
