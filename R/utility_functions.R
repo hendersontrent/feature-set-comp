@@ -75,6 +75,8 @@ get_consistent_datasets_feats <- function(dataset){
   
   for(f in feats){
     
+    message(paste0("Doing feature: ", f))
+    
     tmp2 <- tmp %>%
       filter(comb_id == f) %>%
       dplyr::select(c(id)) %>%
@@ -162,7 +164,7 @@ return_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
   y1 <- dataset[J(y)]
   y1 <- y1$values
   
-  the_cor <- cor(x1, y1, method = cor_type)
+  the_cor <- cor(x1, y1, method = cor_type, use = "pairwise.complete.obs")
   return(the_cor)
 }
 
