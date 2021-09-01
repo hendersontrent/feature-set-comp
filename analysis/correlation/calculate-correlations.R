@@ -65,18 +65,23 @@ fullFeatMat3 <- fullFeatMat2 %>%
 rm(fullFeatMat, fullFeatMat2, good_feats, good_ids, i, tmp, 
    tmp2, tmp3, thesets, storage)
 
+# Normalise feature vectors
+
+fullFeatMat4 <- fullFeatMat3 %>%
+  group_by(comb_id) %>%
+  mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+  ungroup()
+
+rm(fullFeatMat3)
+
 #-------------- Compute correlations ----------------
-
-# Preps for duplicate feature names across sets
-
-normed <- fullFeatMat3
 
 # Convert dataframe to data.table for faster operations and set up keys
 # One is for pairwise matrices and one is for feature x feature correlations
 
-normedDT <- data.table(normed)
+normedDT <- data.table(fullFeatMat4)
 setkey(normedDT, method) 
-normedDT2 <- data.table(normed)
+normedDT2 <- data.table(fullFeatMat4)
 setkey(normedDT2, comb_id)
 rm(normed)
 

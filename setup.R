@@ -25,7 +25,6 @@ library(reticulate)
 library(broom)
 library(microbenchmark)
 library(R.matlab)
-library(igraph)
 library(ggpubr)
 
 # Create important folders if none exist
