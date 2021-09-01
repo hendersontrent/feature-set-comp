@@ -97,6 +97,66 @@ get_consistent_datasets_feats <- function(dataset){
   return(the_list)
 }
 
+#' Function to remove problematic time series after filtering features with >10% NAs
+#' 
+#' @param dataset the Dataset x Feature matrix dataframe
+#' @return a vector of good IDs across the dataset
+#' @author Trent Henderson
+#' 
+
+remove_problematic_datasets <- function(dataset){
+  
+  the_sets <- unique(dataset$method)
+  storage <- list()
+  
+  # Iterate through each set
+  
+  for(i in the_sets){
+    
+    # Filter to set and normalise
+    
+    tmp <- dataset %>%
+      filter(method == i) %>%
+      dplyr::select(c(id, names, values)) %>%
+      distinct() %>%
+      group_by(names) %>%
+      mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+      ungroup()
+    
+    # Widen the matrix
+    
+    dat <- tmp %>%
+      pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+      tibble::column_to_rownames(var = "id")
+    
+    # Filter final NAs
+    
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
+    
+    dat_filtered <- dat_filtered %>%
+      drop_na()
+    
+    # Record good IDs
+    
+    tmp <- data.frame(id = c(rownames(dat_filtered))) %>%
+      mutate(feature_set = i)
+    
+    storage[[i]] <- tmp
+  }
+  
+  theIDs <- rbindlist(storage, use.names = TRUE) %>%
+    dplyr::select(c(id)) %>%
+    group_by(id) %>%
+    summarise(counter = n()) %>%
+    ungroup() %>%
+    filter(counter == 7) %>%
+    dplyr::select(c(id)) %>%
+    mutate(id = as.character(id)) %>%
+    pull()
+  
+  return(theIDs)
+}
+
 #---------------- Correlation helpers --------------
 
 #' Function to produce unique pairwise combinations of two vectors

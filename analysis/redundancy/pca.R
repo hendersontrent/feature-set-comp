@@ -28,6 +28,12 @@ fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
 rm(Emp1000FeatMat, hctsa)
 
+# Get list of time series that have 0 NAs across all features after removing features with >10% NAs
+
+source("R/utility_functions.R")
+
+good_ids <- remove_problematic_datasets(fullFeatMat)
+
 #-------------- Preliminary calculations----------------
 
 #---------------------------
@@ -35,7 +41,7 @@ rm(Emp1000FeatMat, hctsa)
 # by feature set and dataset
 #---------------------------
 
-num_feats <- fullFeatMat %>%
+num_feats <- fullFeatMat2 %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%
@@ -80,14 +86,15 @@ do_pca_summary <- function(dataset){
       pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
       tibble::column_to_rownames(var = "id")
     
-    # Filter final NAs
+    # Filter features with >10% NAs
     
     dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
     
     message(paste0(i,": Removed ",ncol(dat)-ncol(dat_filtered)," features (",round(((ncol(dat)-ncol(dat_filtered))/ncol(dat))*100, digits = 2),"%)"))
     
-    dat_filtered <- dat_filtered %>%
-      drop_na()
+    # Remove IDs that aren't good across all features
+    
+    dat_filtered <- subset(dat_filtered, rownames(dat_filtered) %in% good_ids)
     
     message(paste0(i,": Removed ",nrow(dat)-nrow(dat_filtered)," datasets (",round(((nrow(dat)-nrow(dat_filtered))/nrow(dat))*100, digits = 2),"%)"))
     
