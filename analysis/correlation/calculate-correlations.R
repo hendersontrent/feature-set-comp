@@ -19,36 +19,57 @@ load("data/Emp1000FeatMat.Rda")
 source("R/process_hctsa_csv.R")
 hctsa <- process_hctsa_csv() 
 
-# Merge together and remove erroneous duplicates
+# Merge together
 
-fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa) %>%
-  dplyr::select(c(id, names, method, values)) %>%
-  distinct()
+fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
-# Filter to only datasets that every individual feature computed on
+# Clean up environment as files are big
+
+rm(Emp1000FeatMat, hctsa)
+
+# Get list of time series that have 0 NAs across all features after removing features with >10% NAs
 
 source("R/utility_functions.R")
-good_ind_datasets <- get_consistent_datasets_feats(fullFeatMat)
 
-fullFeatMat_filt <- fullFeatMat %>%
-  filter(id %in% good_ind_datasets)
+good_ids <- remove_problematic_datasets(fullFeatMat)
 
-# Normalise features
+# Remove features with >10% NAs
 
-normed <- normalise_feature_frame(fullFeatMat_filt, names_var = "names", values_var = "values",
-                                  method = "z-score")
+good_feats <- remove_problematic_features(fullFeatMat)
 
-# Clean up environment
+# Cycle through sets and retain only good features then drop problematic time series
 
-rm(Emp1000FeatMat, hctsa, fullFeatMat, fullFeatMat_filt)
+thesets <- unique(fullFeatMat$method)
+storage <- list()
+
+for(i in thesets){
+  
+  tmp <- fullFeatMat %>%
+    filter(method == i)
+  
+  tmp2 <- good_feats %>%
+    filter(feature_set == i)
+  
+  tmp3 <- tmp %>%
+    filter(names %in% unique(tmp2$names))
+  
+  storage[[i]] <- tmp3
+}
+
+fullFeatMat2 <- rbindlist(storage, use.names = TRUE)
+
+fullFeatMat3 <- fullFeatMat2 %>%
+  filter(id %in% good_ids) %>%
+  mutate(comb_id = paste0(method,"_",names))
+
+rm(fullFeatMat, fullFeatMat2, good_feats, good_ids, i, tmp, 
+   tmp2, tmp3, thesets, storage)
 
 #-------------- Compute correlations ----------------
 
 # Preps for duplicate feature names across sets
 
-normed <- normed %>%
-  mutate(comb_id = paste0(method,"_",names)) %>%
-  dplyr::select(c(comb_id, method, values))
+normed <- fullFeatMat3
 
 # Convert dataframe to data.table for faster operations and set up keys
 # One is for pairwise matrices and one is for feature x feature correlations

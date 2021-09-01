@@ -157,6 +157,55 @@ remove_problematic_datasets <- function(dataset){
   return(theIDs)
 }
 
+#' Function to remove problematic features with >10% NAs
+#' 
+#' @param dataset the Dataset x Feature matrix dataframe
+#' @return a dataframe of good names across by feature set
+#' @author Trent Henderson
+#' 
+
+remove_problematic_features <- function(dataset){
+  
+  the_sets <- unique(dataset$method)
+  storage <- list()
+  
+  # Iterate through each set
+  
+  for(i in the_sets){
+    
+    # Filter to set and normalise
+    
+    tmp <- dataset %>%
+      filter(method == i) %>%
+      dplyr::select(c(id, names, values)) %>%
+      distinct() %>%
+      group_by(names) %>%
+      mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+      ungroup()
+    
+    # Widen the matrix
+    
+    dat <- tmp %>%
+      pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+      tibble::column_to_rownames(var = "id")
+    
+    # Filter final NAs
+    
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
+    thefeatures <- colnames(dat_filtered)
+    
+    # Record good IDs
+    
+    tmp2 <- data.frame(names = thefeatures) %>%
+      mutate(feature_set = i)
+    
+    storage[[i]] <- tmp2
+  }
+  
+  outData <- rbindlist(storage, use.names = TRUE)
+  return(outData)
+}
+
 #---------------- Correlation helpers --------------
 
 #' Function to produce unique pairwise combinations of two vectors

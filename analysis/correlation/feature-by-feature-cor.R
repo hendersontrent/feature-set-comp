@@ -10,25 +10,38 @@
 # Author: Trent Henderson, 1 September 2021
 #------------------------------------------
 
-# Load in feature matrix and filter to tsfresh and TSFEL
+# Load feature matrix
 
 load("data/Emp1000FeatMat.Rda")
 
-Emp1000FeatMat2 <- Emp1000FeatMat %>%
-  filter(method %in% c("tsfresh", "TSFEL"))
+# Load hctsa results
 
-rm(Emp1000FeatMat)
+source("R/process_hctsa_csv.R")
+hctsa <- process_hctsa_csv() 
 
-#------------------ Calculations --------------------
+# Merge together
+
+fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
+
+# Clean up environment as files are big
+
+rm(Emp1000FeatMat, hctsa)
+
+# Get list of time series that have 0 NAs across all features after removing features with >10% NAs
 
 source("R/utility_functions.R")
 
-# Check which time series every feature evaluated for and filter if necessary
+good_ids <- remove_problematic_datasets(fullFeatMat)
 
-sets <- get_consistent_datasets_feats(Emp1000FeatMat2)
+#------------------ Calculations --------------------
 
-Emp1000FeatMat2 <- Emp1000FeatMat2 %>%
-  filter(id %in% sets)
+# Filter down
+
+fullFeatMat2 <- fullFeatMat %>%
+  filter(method %in% c("tsfresh", "TSFEL")) %>%
+  filter(id %in% good_ids)
+
+rm(fullFeatMat)
 
 #-----------------------
 # Calculate correlations
@@ -36,7 +49,7 @@ Emp1000FeatMat2 <- Emp1000FeatMat2 %>%
 
 # Normalise and set up data table format
 
-normed <- normalise_feature_frame(Emp1000FeatMat2, names_var = "names", values_var = "values",
+normed <- normalise_feature_frame(fullFeatMat2, names_var = "names", values_var = "values",
                                   method = "z-score") %>%
   mutate(comb_id = paste0(method,"_",names)) %>%
   dplyr::select(c(comb_id, method, values))
@@ -94,7 +107,7 @@ plot_cor_matrix <- function(dataset){
     pivot_wider(id_cols = "V1", names_from = "V2", values_from = "correlation") %>%
     column_to_rownames(var = "V1")
   
-  dat_filtered <- tmp[, which(colMeans(!is.na(tmp)) > 0.1)]
+  dat_filtered <- tmp[, which(colMeans(!is.na(tmp)) > 0.90)]
   
   # Filter to just these features
   
