@@ -23,12 +23,12 @@ sampleIDs <- c("FL_fbruss_L300_N10000_IC_0.3_2_y.dat", "MP_predprey_L5000_IC_0.5
 mySamples <- empirical1000 %>%
   filter(Name %in% sampleIDs) %>%
   mutate(name_clean = case_when(
-          Name == "AS_s2.1_f4_b8_l8280_135971.dat"           ~ "A. Animal Sounds",
+          Name == "AS_s2.1_f4_b8_l8280_135971.dat"           ~ "A. Birdsong",
           Name == "CM_tpi_hob.dat"                           ~ "B. Trans Polar Index",
-          Name == "FL_fbruss_L300_N10000_IC_0.3_2_y.dat"     ~ "C. Over-sampled ODE System",
-          Name == "MD_gaitpdb_GaCo05_01l_SNIP_1256-2955.dat" ~ "D. Parkinson's Disease Gait",
-          Name == "ME_winter_rf.dat"                         ~ "E. Winter River Flow",
-          Name == "MP_predprey_L5000_IC_0.5_0.55_x.dat"      ~ "F. Discrete Map"))
+          Name == "FL_fbruss_L300_N10000_IC_0.3_2_y.dat"     ~ "C. Dissipative forced Brusselator",
+          Name == "MD_gaitpdb_GaCo05_01l_SNIP_1256-2955.dat" ~ "D. Parkinson's disease gait",
+          Name == "ME_winter_rf.dat"                         ~ "E. Winter river flow",
+          Name == "MP_predprey_L5000_IC_0.5_0.55_x.dat"      ~ "F. Predator-prey map"))
 
 # Draw plot
 
