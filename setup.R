@@ -16,6 +16,7 @@ library(tidyr)
 library(readr)
 library(ggplot2)
 library(scales)
+library(latex2exp)
 library(foreign)
 library(Rcatch22)
 library(theft)
@@ -24,7 +25,7 @@ library(reticulate)
 library(broom)
 library(microbenchmark)
 library(R.matlab)
-library(igraph)
+library(ggpubr)
 
 # Create important folders if none exist
 

@@ -17,7 +17,7 @@
 #' @author Trent Henderson
 #' 
 
-generate_processes <- function(n, nsims = 5){
+generate_processes <- function(n, nsims = 10){
   
   set.seed(123)
   
@@ -62,8 +62,8 @@ generate_processes <- function(n, nsims = 5){
 
 # Generate the data
 
-generate_processes(n = 100, nsims = 5)
-generate_processes(n = 250, nsims = 5)
-generate_processes(n = 500, nsims = 5)
-generate_processes(n = 750, nsims = 5)
-generate_processes(n = 1000, nsims = 5)
+generate_processes(n = 100, nsims = 10)
+generate_processes(n = 250, nsims = 10)
+generate_processes(n = 500, nsims = 10)
+generate_processes(n = 750, nsims = 10)
+generate_processes(n = 1000, nsims = 10)

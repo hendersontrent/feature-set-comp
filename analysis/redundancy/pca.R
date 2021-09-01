@@ -28,6 +28,12 @@ fullFeatMat <- bind_rows(Emp1000FeatMat, hctsa)
 
 rm(Emp1000FeatMat, hctsa)
 
+# Get list of time series that have 0 NAs across all features after removing features with >10% NAs
+
+source("R/utility_functions.R")
+
+good_ids <- remove_problematic_datasets(fullFeatMat)
+
 #-------------- Preliminary calculations----------------
 
 #---------------------------
@@ -35,7 +41,7 @@ rm(Emp1000FeatMat, hctsa)
 # by feature set and dataset
 #---------------------------
 
-num_feats <- fullFeatMat %>%
+num_feats <- fullFeatMat2 %>%
   dplyr::select(c(id, names, method)) %>%
   distinct() %>%
   group_by(id, names, method) %>%
@@ -64,31 +70,15 @@ do_pca_summary <- function(dataset){
     
     tryCatch({
     
-    # Filter to set
+    # Filter to set and normalise
     
     tmp <- dataset %>%
       filter(method == i) %>%
       dplyr::select(c(id, names, values)) %>%
       distinct() %>%
-      drop_na()
-    
-    # Remove features that didn't calculate on all datasets
-    
-    feat_list <- num_feats %>%
-      filter(method == i) %>%
-      dplyr::select(c(names)) %>%
-      pull()
-    
-    tmp <- tmp %>%
-      filter(names %in% feat_list)
-    
-    # Normalise features
-    
-    tmp <- tmp %>%
       group_by(names) %>%
       mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
-      ungroup() %>%
-      drop_na()
+      ungroup()
     
     # Widen the matrix
     
@@ -96,16 +86,17 @@ do_pca_summary <- function(dataset){
       pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
       tibble::column_to_rownames(var = "id")
     
-    if(i == "hctsa"){
-      dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.9999)]
-    } else{
-      dat_filtered <- dat
-    }
+    # Filter features with >10% NAs
     
-    # Filter final NAs
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
     
-    dat_filtered <- dat_filtered %>%
-      drop_na()
+    message(paste0(i,": Removed ",ncol(dat)-ncol(dat_filtered)," features (",round(((ncol(dat)-ncol(dat_filtered))/ncol(dat))*100, digits = 2),"%)"))
+    
+    # Remove IDs that aren't good across all features
+    
+    dat_filtered <- subset(dat_filtered, rownames(dat_filtered) %in% good_ids)
+    
+    message(paste0(i,": Removed ",nrow(dat)-nrow(dat_filtered)," datasets (",round(((nrow(dat)-nrow(dat_filtered))/nrow(dat))*100, digits = 2),"%)"))
     
     # Compute PCA
     
@@ -137,7 +128,7 @@ pca_results <- do_pca_summary(fullFeatMat) %>%
 
 #-------------- Produce summary graphic ----------------
 
-# Scaled by number of features
+# Normal
 
 p <- pca_results %>%
   group_by(feature_set) %>%
@@ -153,9 +144,12 @@ p <- pca_results %>%
        y = "Variance Explained (%)",
        colour = NULL) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p)
+
+# Cumulative
 
 p1 <- pca_results %>%
   group_by(feature_set) %>%
@@ -167,17 +161,18 @@ p1 <- pca_results %>%
   scale_colour_brewer(palette = "Dark2") +
   scale_x_continuous(labels = function(x) paste0(x, "%")) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "% of Principal Components",
-       y = "Cumulative Variance Explained (%)",
+  labs(x = "% of principal components",
+       y = "Cumulative variance explained (%)",
        colour = NULL) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
 
 print(p1)
 
 # Save plots
 
-ggsave("output/pca-scaled.png", p)
-ggsave("output/pca-scaled.svg", p)
-ggsave("output/pca-cumsum-scaled.png", p1)
-ggsave("output/pca-cumsum-scaled.svg", p1)
+ggsave("output/pca-scaled.png", p, units = "in", height = 10, width = 10)
+ggsave("output/pca-scaled.svg", p, units = "in", height = 10, width = 10)
+ggsave("output/pca-cumsum-scaled.png", p1, units = "in", height = 10, width = 10)
+ggsave("output/pca-cumsum-scaled.svg", p1, units = "in", height = 10, width = 10)

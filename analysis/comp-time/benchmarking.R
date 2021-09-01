@@ -11,16 +11,18 @@
 
 #------------------ Benchmark calculations ----------
 
-#-------------------
+#---------------
 # Compute times
 # for R packages
-#-------------------
+#---------------
 
 #' Function to track computation time for Rcatch22, feasts, and tsfeatures
 #' 
 #' @return an object of class dataframe
 #' @author Trent Henderson
 #' 
+
+# NOTE: ONLY RUN THIS IF "output/comptime/R.csv" DOES NOT EXIST!
 
 track_comptime <- function(){
   
@@ -115,15 +117,18 @@ write.csv(r_pkg_results, "output/comptime/R.csv")
 
 # Load files and remove anomalous entries
 
+r_pkg_results <- readr::read_csv("output/comptime/R.csv") # Only run this if it has been created
 kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
-tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.12)
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.20)
 
-# Add columns to hctsa vector of times
+# Add vector of times to hctsa results
 
-thelengths <- c(100, 100, 100, 100, 100, 250, 250, 250, 250, 250,
-                500, 500, 500, 500, 500, 750, 750, 750, 750, 750,
-                1000, 1000, 1000, 1000, 1000)
+thelengths <- c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 
+                250, 250, 250, 250, 250,250, 250, 250, 250, 250,
+                500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 
+                750, 750, 750, 750, 750, 750, 750, 750, 750, 750,
+                1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000)
 
 hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = FALSE) %>% 
   rename(mean = X1) %>%
@@ -139,31 +144,90 @@ hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = 
 #-------------------
 
 all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
-  group_by(feature_set, ts_length) %>%
-  summarise(mean = mean(mean)) %>%
-  ungroup()
+  mutate(feature_set_feats = case_when(
+          feature_set == "catch22"    ~ "catch22 (22)",
+          feature_set == "feasts"     ~ "feasts (43)",
+          feature_set == "hctsa"      ~ "hctsa (7300)",
+          feature_set == "Kats"       ~ "Kats (40)",
+          feature_set == "tsfeatures" ~ "tsfeatures (62)",
+          feature_set == "TSFEL"      ~ "TSFEL (285-390)",
+          feature_set == "tsfresh"    ~ "tsfresh (779)"))
 
 #------------------ Graphical summary ---------------
 
+#---------
+# Raw time
+#---------
+
 p <- all_comptimes %>%
+  group_by(feature_set, feature_set_feats, ts_length) %>%
+  summarise(avg = median(mean),
+            sd = sd(mean)) %>%
+  ungroup() %>%
+  mutate(lower = avg - (1*sd),
+         upper = avg + (1*sd)) %>%
   ggplot() +
-  geom_line(aes(x = ts_length, y = mean, colour = feature_set)) +
-  geom_point(aes(x = ts_length, y = mean, colour = feature_set), size = 2) +
-  labs(x = "Time Series Length",
-       y = "Computation Time (s)",
+  geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
+  labs(subtitle = "A",
+       x = "Time series length (samples)",
+       y = "Computation time (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
-  scale_y_log10(limits = c(1e-3, 1e1),
-                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 5),
+  scale_y_log10(limits = c(1e-4, 1e2),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
-  theme(panel.grid.minor = element_blank(),
-        legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 18),
+        plot.subtitle = element_text(face = "bold"))
 
 print(p)
 
-ggsave("output/comp-time.png", p)
-ggsave("output/comp-time.svg", p)
-ggsave("output/comp-time.pdf", p)
+#-------
+# Scaled
+#-------
+
+p1 <- all_comptimes %>%
+  mutate(mean_scaled = case_when(
+          feature_set == "catch22"                   ~ mean/22,
+          feature_set == "feasts"                    ~ mean/43,
+          feature_set == "hctsa"                     ~ mean/7300,
+          feature_set == "Kats"                      ~ mean/40,
+          feature_set == "tsfeatures"                ~ mean/22,
+          feature_set == "tsfresh"                   ~ mean/779,
+          feature_set == "TSFEL" & ts_length == 100  ~ mean/285,
+          feature_set == "TSFEL" & ts_length == 250  ~ mean/285,
+          feature_set == "TSFEL" & ts_length >= 500  ~ mean/390)) %>%
+  group_by(feature_set, feature_set_feats, ts_length) %>%
+  summarise(avg = median(mean_scaled),
+            sd = sd(mean_scaled)) %>%
+  ungroup() %>%
+  mutate(lower = avg - (1*sd),
+         upper = avg + (1*sd)) %>%
+  ggplot() +
+  geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
+  labs(subtitle = "B",
+       x = "Time series length (samples)",
+       y = "Computation time per feature (s)",
+       colour = NULL) +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_y_log10(labels = trans_format("log10", label_math())) +
+  scale_x_log10(breaks = c(1e2, 1e3),
+                labels = trans_format("log10", label_math())) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18),
+        plot.subtitle = element_text(face = "bold"))
+
+print(p1)
+
+# Save outputs
+
+p2 <- ggpubr::ggarrange(p, p1, nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom")
+ggsave("output/comp-time-merged.png", p2, units = "in", height = 8, width = 10)

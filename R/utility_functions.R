@@ -75,6 +75,8 @@ get_consistent_datasets_feats <- function(dataset){
   
   for(f in feats){
     
+    message(paste0("Doing feature: ", f))
+    
     tmp2 <- tmp %>%
       filter(comb_id == f) %>%
       dplyr::select(c(id)) %>%
@@ -93,6 +95,115 @@ get_consistent_datasets_feats <- function(dataset){
   }
   
   return(the_list)
+}
+
+#' Function to remove problematic time series after filtering features with >10% NAs
+#' 
+#' @param dataset the Dataset x Feature matrix dataframe
+#' @return a vector of good IDs across the dataset
+#' @author Trent Henderson
+#' 
+
+remove_problematic_datasets <- function(dataset){
+  
+  the_sets <- unique(dataset$method)
+  storage <- list()
+  
+  # Iterate through each set
+  
+  for(i in the_sets){
+    
+    # Filter to set and normalise
+    
+    tmp <- dataset %>%
+      filter(method == i) %>%
+      dplyr::select(c(id, names, values)) %>%
+      distinct() %>%
+      group_by(names) %>%
+      mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+      ungroup()
+    
+    # Widen the matrix
+    
+    dat <- tmp %>%
+      pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+      tibble::column_to_rownames(var = "id")
+    
+    # Filter final NAs
+    
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
+    
+    dat_filtered <- dat_filtered %>%
+      drop_na()
+    
+    # Record good IDs
+    
+    tmp <- data.frame(id = c(rownames(dat_filtered))) %>%
+      mutate(feature_set = i)
+    
+    storage[[i]] <- tmp
+  }
+  
+  theIDs <- rbindlist(storage, use.names = TRUE) %>%
+    dplyr::select(c(id)) %>%
+    group_by(id) %>%
+    summarise(counter = n()) %>%
+    ungroup() %>%
+    filter(counter == 7) %>%
+    dplyr::select(c(id)) %>%
+    mutate(id = as.character(id)) %>%
+    pull()
+  
+  return(theIDs)
+}
+
+#' Function to remove problematic features with >10% NAs
+#' 
+#' @param dataset the Dataset x Feature matrix dataframe
+#' @return a dataframe of good names across by feature set
+#' @author Trent Henderson
+#' 
+
+remove_problematic_features <- function(dataset){
+  
+  the_sets <- unique(dataset$method)
+  storage <- list()
+  
+  # Iterate through each set
+  
+  for(i in the_sets){
+    
+    # Filter to set and normalise
+    
+    tmp <- dataset %>%
+      filter(method == i) %>%
+      dplyr::select(c(id, names, values)) %>%
+      distinct() %>%
+      group_by(names) %>%
+      mutate(values = normalise_feature_vector(values, method = "z-score")) %>%
+      ungroup()
+    
+    # Widen the matrix
+    
+    dat <- tmp %>%
+      pivot_wider(id_cols = id, names_from = names, values_from = values) %>%
+      tibble::column_to_rownames(var = "id")
+    
+    # Filter final NAs
+    
+    dat_filtered <- dat[, which(colMeans(!is.na(dat)) > 0.90)]
+    thefeatures <- colnames(dat_filtered)
+    
+    # Record good IDs
+    
+    tmp2 <- data.frame(names = thefeatures) %>%
+      mutate(feature_set = i)
+    
+    storage[[i]] <- tmp2
+  }
+  
+  outData <- rbindlist(storage, use.names = TRUE)
+  return(outData)
 }
 
 #---------------- Correlation helpers --------------
@@ -162,7 +273,7 @@ return_cor <- function(dataset, x, y, cor_type = c("pearson", "spearman")){
   y1 <- dataset[J(y)]
   y1 <- y1$values
   
-  the_cor <- cor(x1, y1, method = cor_type)
+  the_cor <- cor(x1, y1, method = cor_type, use = "pairwise.complete.obs")
   return(the_cor)
 }
 
