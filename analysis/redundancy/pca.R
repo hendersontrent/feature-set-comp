@@ -173,6 +173,6 @@ print(p1)
 # Save plots
 
 ggsave("output/pca-scaled.png", p, units = "in", height = 10, width = 10)
-ggsave("output/pca-scaled.svg", p, units = "in", height = 10, width = 10)
+ggsave("output/pca-scaled.pdf", p, units = "in", height = 10, width = 10)
 ggsave("output/pca-cumsum-scaled.png", p1, units = "in", height = 10, width = 10)
-ggsave("output/pca-cumsum-scaled.svg", p1, units = "in", height = 10, width = 10)
+ggsave("output/pca-cumsum-scaled.pdf", p1, units = "in", height = 10, width = 10)

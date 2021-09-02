@@ -45,5 +45,4 @@ p <- mySamples %>%
 print(p)
 
 ggsave("output/sample-ts.png", p, units = "in", height = 10, width = 10)
-ggsave("output/sample-ts.svg", p, units = "in", height = 10, width = 10)
-ggsave("output/sample-ts.pdf", p)
+ggsave("output/sample-ts.pdf", p, units = "in", height = 10, width = 10)

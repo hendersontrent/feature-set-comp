@@ -113,5 +113,4 @@ print(p)
 #-----------
 
 ggsave("output/mean-max-abs-cor.png", p, units = "in", height = 10, width = 10)
-ggsave("output/mean-max-abs-cor.svg", p, units = "in", height = 10, width = 10)
-ggsave("output/mean-max-abs-cor.pdf", p)
+ggsave("output/mean-max-abs-cor.pdf", p, units = "in", height = 10, width = 10)
