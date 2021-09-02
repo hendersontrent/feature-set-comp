@@ -118,9 +118,9 @@ write.csv(r_pkg_results, "output/comptime/R.csv")
 # Load files and remove anomalous entries
 
 r_pkg_results <- readr::read_csv("output/comptime/R.csv") # Only run this if it has been created
-kats_results <- readr::read_csv("output/comptime/kats.csv") %>% filter(mean < 8)
+kats_results <- readr::read_csv("output/comptime/kats.csv") #%>% filter(mean < 8)
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
-tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") %>% filter(mean < 0.20)
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") #%>% filter(mean < 0.20)
 
 # Add vector of times to hctsa results
 
@@ -164,11 +164,11 @@ p <- all_comptimes %>%
   summarise(avg = median(mean),
             sd = sd(mean)) %>%
   ungroup() %>%
-  mutate(lower = avg - (1*sd),
-         upper = avg + (1*sd)) %>%
+  # mutate(lower = avg - (1*sd),
+  #        upper = avg + (1*sd)) %>%
   ggplot() +
   geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  # geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
   geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
   labs(subtitle = "A",
        x = "Time series length (samples)",
@@ -206,11 +206,11 @@ p1 <- all_comptimes %>%
   summarise(avg = median(mean_scaled),
             sd = sd(mean_scaled)) %>%
   ungroup() %>%
-  mutate(lower = avg - (1*sd),
-         upper = avg + (1*sd)) %>%
+  # mutate(lower = avg - (1*sd),
+  #        upper = avg + (1*sd)) %>%
   ggplot() +
   geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  # geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
   geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
   labs(subtitle = "B",
        x = "Time series length (samples)",
@@ -229,5 +229,5 @@ print(p1)
 
 # Save outputs
 
-p2 <- ggpubr::ggarrange(p, p1, nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom")
-ggsave("output/comp-time-merged.png", p2, units = "in", height = 8, width = 10)
+p2 <- ggpubr::ggarrange(p, p1, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
+ggsave("output/comp-time-merged.png", p2, units = "in", height = 8.5, width = 10)

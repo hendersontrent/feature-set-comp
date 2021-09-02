@@ -100,7 +100,7 @@ p <- mean_maxabscors %>%
        y = "Benchmark",
        fill = TeX("$|\\rho_{max}|$")) +
   scale_fill_distiller(palette = "GnBu", direction = 1,
-                       limits = c(0.6,1), oob = squish) +
+                       limits = c(0.25, 1), oob = squish) +
   theme_bw() +
   theme(legend.position = "bottom",
         text = element_text(size = 18),
