@@ -234,3 +234,4 @@ print(p1)
 
 p2 <- ggpubr::ggarrange(p, p1, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
 ggsave("output/comp-time-merged.png", p2, units = "in", height = 8.5, width = 10)
+ggsave("output/comp-time-merged.pdf", p2, units = "in", height = 8.5, width = 10)
