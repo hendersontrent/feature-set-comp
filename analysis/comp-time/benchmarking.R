@@ -177,7 +177,7 @@ p <- all_comptimes %>%
   scale_colour_brewer(palette = "Dark2") +
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
-  scale_y_log10(limits = c(1e-4, 1e2),
+  scale_y_log10(limits = c(1e-3, 1e2),
                 breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
@@ -217,7 +217,9 @@ p1 <- all_comptimes %>%
        y = "Computation time per feature (s)",
        colour = NULL) +
   scale_colour_brewer(palette = "Dark2") +
-  scale_y_log10(labels = trans_format("log10", label_math())) +
+  scale_y_log10(limits = c(1e-5, 1e0),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
+                labels = trans_format("log10", label_math())) +
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
   theme_bw() +
