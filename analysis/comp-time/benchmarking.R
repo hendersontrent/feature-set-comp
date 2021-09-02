@@ -199,9 +199,10 @@ p1 <- all_comptimes %>%
           feature_set == "Kats"                      ~ mean/40,
           feature_set == "tsfeatures"                ~ mean/22,
           feature_set == "tsfresh"                   ~ mean/779,
-          feature_set == "TSFEL" & ts_length == 100  ~ mean/285,
-          feature_set == "TSFEL" & ts_length == 250  ~ mean/285,
-          feature_set == "TSFEL" & ts_length >= 500  ~ mean/390)) %>%
+          feature_set == "TSFEL" & ts_length == 100  ~ mean/185,
+          feature_set == "TSFEL" & ts_length == 250  ~ mean/260,
+          feature_set == "TSFEL" & ts_length == 500  ~ mean/285,
+          feature_set == "TSFEL" & ts_length > 500   ~ mean/390)) %>%
   group_by(feature_set, feature_set_feats, ts_length) %>%
   summarise(avg = median(mean_scaled),
             sd = sd(mean_scaled)) %>%
