@@ -118,9 +118,9 @@ write.csv(r_pkg_results, "output/comptime/R.csv")
 # Load files and remove anomalous entries
 
 r_pkg_results <- readr::read_csv("output/comptime/R.csv") # Only run this if it has been created
-kats_results <- readr::read_csv("output/comptime/kats.csv") #%>% filter(mean < 8)
+kats_results <- readr::read_csv("output/comptime/kats.csv")
 tsfresh_results <- readr::read_csv("output/comptime/tsfresh.csv")
-tsfel_results <- readr::read_csv("output/comptime/tsfel.csv") #%>% filter(mean < 0.20)
+tsfel_results <- readr::read_csv("output/comptime/tsfel.csv")
 
 # Add vector of times to hctsa results
 
@@ -151,7 +151,7 @@ all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_r
           feature_set == "Kats"       ~ "Kats (40)",
           feature_set == "tsfeatures" ~ "tsfeatures (62)",
           feature_set == "TSFEL"      ~ "TSFEL (285-390)",
-          feature_set == "tsfresh"    ~ "tsfresh (779)"))
+          feature_set == "tsfresh"    ~ "tsfresh (1558)"))
 
 #------------------ Graphical summary ---------------
 
@@ -181,7 +181,8 @@ p <- all_comptimes %>%
                 breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   theme_bw() +
-  theme(legend.position = "bottom",
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "bottom",
         text = element_text(size = 18),
         plot.subtitle = element_text(face = "bold"))
 
@@ -198,7 +199,7 @@ p1 <- all_comptimes %>%
           feature_set == "hctsa"                     ~ mean/7300,
           feature_set == "Kats"                      ~ mean/40,
           feature_set == "tsfeatures"                ~ mean/22,
-          feature_set == "tsfresh"                   ~ mean/779,
+          feature_set == "tsfresh"                   ~ mean/1558,
           feature_set == "TSFEL" & ts_length == 100  ~ mean/185,
           feature_set == "TSFEL" & ts_length == 250  ~ mean/260,
           feature_set == "TSFEL" & ts_length == 500  ~ mean/285,
@@ -224,7 +225,8 @@ p1 <- all_comptimes %>%
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
   theme_bw() +
-  theme(legend.position = "bottom",
+  theme(panel.grid.minor = element_blank(),
+        legend.position = "bottom",
         text = element_text(size = 18),
         plot.subtitle = element_text(face = "bold"))
 
@@ -233,5 +235,5 @@ print(p1)
 # Save outputs
 
 p2 <- ggpubr::ggarrange(p, p1, nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom")
-ggsave("output/comp-time-merged.png", p2, units = "in", height = 8.5, width = 10)
-ggsave("output/comp-time-merged.pdf", p2, units = "in", height = 8.5, width = 10)
+ggsave("output/comp-time-merged.png", p2, units = "in", height = 7, width = 14)
+ggsave("output/comp-time-merged.pdf", p2, units = "in", height = 7, width = 14)
