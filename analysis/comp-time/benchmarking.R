@@ -36,7 +36,7 @@ track_comptime <- function(){
   for(f in files){
     
     tmp <- readr::read_csv(f)
-    x <- tmp$values
+    x <- tmp$value
     
     m <- summary(microbenchmark(Rcatch22::catch22_all(x), times = 1, unit = "s"))
     
@@ -60,7 +60,7 @@ track_comptime <- function(){
     tmp <- readr::read_csv(f)
     x1 <- tsibble::as_tsibble(tmp, index = X1)
     
-    m <- summary(microbenchmark(x1 %>% fabletools::features(values, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
+    m <- summary(microbenchmark(x1 %>% fabletools::features(value, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
     
     results <- data.frame(m) %>%
       dplyr::select(c(mean)) %>%
@@ -80,7 +80,7 @@ track_comptime <- function(){
   for(f in files){
     
     tmp <- readr::read_csv(f)
-    x <- tmp$values
+    x <- tmp$value
     
     m <- summary(microbenchmark(tsfeatures::tsfeatures(x, 
                                                        features = c("frequency", "stl_features", "entropy", "acf_features",

@@ -27,7 +27,7 @@ for file in glob.glob("*.csv"):
     # Read in file
 
     x = pd.read_csv(file)
-    x = x.loc[:,"values"]
+    x = x.loc[:,"value"]
 
     # Run computation
 

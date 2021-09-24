@@ -1,7 +1,7 @@
 #----------------------------------------
 # This script sets out to run tsfresh
 # and track time to compute a set of
-# Gaussian noise of different lengths
+# sinusoids of different lengths
 #----------------------------------------
 
 #-------------------------------------------
@@ -17,7 +17,7 @@ from tsfresh import extract_features
 
 #------------ Run benchmarking -------------
 
-os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sinusoid/sims")
+os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/sinusoid")
 
 cols = ['ts_length', 'mean', 'feature_set']
 lst = []

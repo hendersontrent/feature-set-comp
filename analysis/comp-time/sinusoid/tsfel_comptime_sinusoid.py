@@ -1,7 +1,7 @@
 #----------------------------------------
 # This script sets out to run TSFEL
 # and track time to compute a set of
-# Gaussian noise of different lengths
+# sinusoids of different lengths
 #----------------------------------------
 
 #-------------------------------------------
@@ -17,7 +17,7 @@ import tsfel
 
 #------------ Run benchmarking -------------
 
-os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sinusoid/sims")
+os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/sinusoid")
 
 cols = ['ts_length', 'mean', 'feature_set']
 lst = []
@@ -27,7 +27,7 @@ for file in glob.glob("*.csv"):
     # Read in file
 
     x = pd.read_csv(file)
-    x = x.loc[:,"values"]
+    x = x.loc[:,"value"]
 
     # Run computation
 

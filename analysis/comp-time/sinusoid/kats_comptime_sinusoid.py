@@ -1,7 +1,7 @@
 #----------------------------------------
 # This script sets out to run Kats
 # and track time to compute a set of
-# Gaussian noise of different lengths
+# sinusoids of different lengths
 #----------------------------------------
 
 #-------------------------------------------
