@@ -137,10 +137,6 @@ hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = 
 
 #-------------------
 # Bind all together
-# for plotting and
-# compute min, mean,
-# max for each
-# length
 #-------------------
 
 all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%

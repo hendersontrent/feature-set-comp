@@ -25,7 +25,7 @@ generate_processes <- function(n, nsims = 10){
   
   for(i in 1:nsims){
     
-    tmp <- data.frame(values = c(rnorm(n, mean = 0, sd = 1)))
+    tmp <- data.frame(value = c(rnorm(n, mean = 0, sd = 1)))
     
     write.csv(tmp, paste0("data/sims/",n,"_",i,".csv"))
     
@@ -49,7 +49,7 @@ generate_processes <- function(n, nsims = 10){
     
     # Make no column header version for Matlab
     
-    values <- tmp$values
+    values <- tmp$value
     write.table(values, paste0("data/sims/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
   }
 }

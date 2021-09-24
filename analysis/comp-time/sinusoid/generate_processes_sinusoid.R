@@ -27,9 +27,9 @@ generate_processes_sinusoid <- function(n, nsims = 10){
     
     x <- seq(0, 8 * pi, length.out = n)
     y <- sin(x)
-    tmp <- data.frame(values = y + rnorm(n, mean = 0, sd = 0.1))
+    tmp <- data.frame(value = y + rnorm(n, mean = 0, sd = 0.1))
     
-    write.csv(tmp, paste0("data/sinusoid/sims/",n,"_",i,".csv"))
+    write.csv(tmp, paste0("data/sims/sinusoid/",n,"_",i,".csv"))
     
     # Add datetime for Kats
     
@@ -51,7 +51,7 @@ generate_processes_sinusoid <- function(n, nsims = 10){
     
     # Make no column header version for Matlab
     
-    values <- tmp$values
+    values <- tmp$value
     write.table(values, paste0("data/sims/sinusoid/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
   }
 }
