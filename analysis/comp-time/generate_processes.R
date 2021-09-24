@@ -51,7 +51,7 @@ generate_processes <- function(n, nsims = 10){
     write.csv(tmp2, paste0("data/sims/kats/",n,"_",i,".csv"))
   }
   
-  # Make no column header version for Latbal
+  # Make no column header version for Matlab
   
   for(i in 1:nsims){
     

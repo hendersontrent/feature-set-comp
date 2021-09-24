@@ -25,16 +25,21 @@ generate_processes_sinusoid <- function(n, nsims = 10){
   
   for(i in 1:nsims){
     
-    tmp <- data.frame(values = c(rnorm(n, mean = 0, sd = 1)))
+    x <- seq(0, 8 * pi,length.out = n)
+    y <- sin(x)
+    tmp <- data.frame(values = y + rnorm(n, mean = 0, sd = 0.1))
     
-    write.csv(tmp, paste0("data/sims/",n,"_",i,".csv"))
+    write.csv(tmp, paste0("data/sinusoid/sims/",n,"_",i,".csv"))
   }
   
   # Add datetime for Kats
   
   for(i in 1:nsims){
     
-    tmp <- data.frame(value = c(rnorm(n, mean = 0, sd = 1))) %>%
+    x <- seq(0, 8 * pi,length.out = n)
+    y <- sin(x)
+    
+    tmp <- data.frame(values = y + rnorm(n, mean = 0, sd = 0.1)) %>%
       mutate(timepoint = row_number())
     
     unique_times <- unique(tmp$timepoint)
@@ -48,15 +53,18 @@ generate_processes_sinusoid <- function(n, nsims = 10){
       dplyr::left_join(datetimes, by = c("timepoint" = "timepoint")) %>%
       dplyr::select(c(time, value))
     
-    write.csv(tmp2, paste0("data/sims/kats/",n,"_",i,".csv"))
+    write.csv(tmp2, paste0("data/sims/sinusoid/kats/",n,"_",i,".csv"))
   }
   
-  # Make no column header version for Latbal
+  # Make no column header version for Matlab
   
   for(i in 1:nsims){
     
-    values <- rnorm(n, mean = 0, sd = 1)
-    write.table(values, paste0("data/sims/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
+    x <- seq(0, 8 * pi,length.out = n)
+    y <- sin(x)
+    values <- y + rnorm(n, mean = 0, sd = 0.1)
+
+    write.table(values, paste0("data/sims/sinusoid/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
   }
 }
 
