@@ -128,24 +128,29 @@ pca_results <- do_pca_summary(fullFeatMat) %>%
 
 #-------------- Produce summary graphic ----------------
 
-# Normal
+# Bar plot to 90% variance
 
 p <- pca_results %>%
   group_by(feature_set) %>%
   mutate(PC = PC/max(PC)) %>%
+  filter(cs > 0.90) %>%
+  group_by(feature_set) %>%
+  mutate(flag = ifelse(cs == min(cs), "Min", "Not")) %>%
   ungroup() %>%
-  ggplot(aes(x = (PC*100), y = (percent*100), colour = feature_set)) +
-  geom_line() +
-  geom_point() +
-  scale_colour_brewer(palette = "Dark2") +
-  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  filter(flag == "Min") %>%
+  ggplot(aes(x = reorder(feature_set, -PC), y = (PC*100), fill = feature_set)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  scale_fill_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "% of Principal Components",
-       y = "Variance Explained (%)",
-       colour = NULL) +
+  labs(subtitle = "A",
+       x = "Feature set",
+       y = "% of principal components for 90% variance",
+       fill = NULL) +
   theme_bw() +
   theme(legend.position = "bottom",
-        text = element_text(size = 18))
+        text = element_text(size = 18),
+        axis.text.x = element_text(angle = 90),
+        plot.subtitle = element_text(face = "bold"))
 
 print(p)
 
@@ -158,21 +163,23 @@ p1 <- pca_results %>%
   ggplot(aes(x = (PC*100), y = (cs*100), colour = feature_set)) +
   geom_line() +
   geom_point() +
+  geom_hline(yintercept = 90, lty = "dashed") +
   scale_colour_brewer(palette = "Dark2") +
   scale_x_continuous(labels = function(x) paste0(x, "%")) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(x = "% of principal components",
+  labs(subtitle = "B",
+       x = "% of principal components",
        y = "Cumulative variance explained (%)",
        colour = NULL) +
   theme_bw() +
   theme(legend.position = "bottom",
-        text = element_text(size = 18))
+        text = element_text(size = 18),
+        plot.subtitle = element_text(face = "bold"))
 
 print(p1)
 
 # Save plots
 
-ggsave("output/pca-scaled.png", p, units = "in", height = 10, width = 10)
-ggsave("output/pca-scaled.pdf", p, units = "in", height = 10, width = 10)
-ggsave("output/pca-cumsum-scaled.png", p1, units = "in", height = 10, width = 10)
+p2 <- ggpubr::ggarrange(p, p1, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
+ggsave("output/pca-merged.pdf", p2, units = "in", height = 13, width = 10)
 ggsave("output/pca-cumsum-scaled.pdf", p1, units = "in", height = 10, width = 10)
