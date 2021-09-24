@@ -36,7 +36,7 @@ track_comptime <- function(){
   for(f in files){
     
     tmp <- readr::read_csv(f)
-    x <- tmp$values
+    x <- tmp$value
     
     m <- summary(microbenchmark(Rcatch22::catch22_all(x), times = 1, unit = "s"))
     
@@ -60,7 +60,7 @@ track_comptime <- function(){
     tmp <- readr::read_csv(f)
     x1 <- tsibble::as_tsibble(tmp, index = X1)
     
-    m <- summary(microbenchmark(x1 %>% fabletools::features(values, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
+    m <- summary(microbenchmark(x1 %>% fabletools::features(value, fabletools::feature_set(pkgs = "feasts")), times = 1, unit = "s"))
     
     results <- data.frame(m) %>%
       dplyr::select(c(mean)) %>%
@@ -80,7 +80,7 @@ track_comptime <- function(){
   for(f in files){
     
     tmp <- readr::read_csv(f)
-    x <- tmp$values
+    x <- tmp$value
     
     m <- summary(microbenchmark(tsfeatures::tsfeatures(x, 
                                                        features = c("frequency", "stl_features", "entropy", "acf_features",
@@ -115,7 +115,7 @@ write.csv(r_pkg_results, "output/comptime/R.csv")
 # for non-R packages
 #-------------------
 
-# Load files and remove anomalous entries
+# Load files
 
 r_pkg_results <- readr::read_csv("output/comptime/R.csv") # Only run this if it has been created
 kats_results <- readr::read_csv("output/comptime/kats.csv")
@@ -137,10 +137,6 @@ hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = 
 
 #-------------------
 # Bind all together
-# for plotting and
-# compute min, mean,
-# max for each
-# length
 #-------------------
 
 all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
@@ -162,14 +158,14 @@ all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_r
 p <- all_comptimes %>%
   group_by(feature_set, feature_set_feats, ts_length) %>%
   summarise(avg = median(mean),
-            sd = sd(mean)) %>%
+            sd = sd(mean),
+            lower = quantile(mean, probs = 0.25),
+            upper = quantile(mean, probs = 0.75)) %>%
   ungroup() %>%
-  # mutate(lower = avg - (1*sd),
-  #        upper = avg + (1*sd)) %>%
   ggplot() +
   geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  # geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
-  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 1.5) +
   labs(subtitle = "A",
        x = "Time series length (samples)",
        y = "Computation time (s)",
@@ -206,14 +202,14 @@ p1 <- all_comptimes %>%
           feature_set == "TSFEL" & ts_length > 500   ~ mean/390)) %>%
   group_by(feature_set, feature_set_feats, ts_length) %>%
   summarise(avg = median(mean_scaled),
-            sd = sd(mean_scaled)) %>%
+            sd = sd(mean_scaled),
+            lower = quantile(mean_scaled, probs = 0.25),
+            upper = quantile(mean_scaled, probs = 0.75)) %>%
   ungroup() %>%
-  # mutate(lower = avg - (1*sd),
-  #        upper = avg + (1*sd)) %>%
   ggplot() +
   geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  # geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
-  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 2) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 1.5) +
   labs(subtitle = "B",
        x = "Time series length (samples)",
        y = "Computation time per feature (s)",

@@ -98,7 +98,7 @@ p <- mean_maxabscors %>%
             size = 6) +
   labs(x = "Test",
        y = "Benchmark",
-       fill = TeX("$|\\rho |^{max}$")) +
+       fill = "S(T|B)") +
   scale_fill_distiller(palette = "GnBu", direction = 1,
                        limits = c(0.25, 1), oob = squish) +
   theme_bw() +

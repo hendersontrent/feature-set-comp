@@ -1,12 +1,12 @@
 #----------------------------------------
 # This script sets out to run TSFEL
 # and track time to compute a set of
-# Gaussian noise of different lengths
+# sinusoids of different lengths
 #----------------------------------------
 
-#----------------------------------------
-# Author: Trent Henderson, 20 August 2021
-#----------------------------------------
+#-------------------------------------------
+# Author: Trent Henderson, 24 September 2021
+#-------------------------------------------
 
 import glob
 import os
@@ -17,7 +17,7 @@ import tsfel
 
 #------------ Run benchmarking -------------
 
-os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims")
+os.chdir("/Users/trenthenderson/Documents/Git/feature-set-comp/data/sims/sinusoid")
 
 cols = ['ts_length', 'mean', 'feature_set']
 lst = []
@@ -45,4 +45,4 @@ results = pd.DataFrame(lst, columns = cols)
 
 # Store outputs
 
-results.to_csv("/Users/trenthenderson/Documents/Git/feature-set-comp/output/comptime/tsfel.csv", index = False)
+results.to_csv("/Users/trenthenderson/Documents/Git/feature-set-comp/output/comptime/sinusoid/tsfel.csv", index = False)
