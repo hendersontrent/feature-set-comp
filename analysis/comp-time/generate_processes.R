@@ -28,34 +28,28 @@ generate_processes <- function(n, nsims = 10){
     tmp <- data.frame(values = c(rnorm(n, mean = 0, sd = 1)))
     
     write.csv(tmp, paste0("data/sims/",n,"_",i,".csv"))
-  }
-  
-  # Add datetime for Kats
-  
-  for(i in 1:nsims){
     
-    tmp <- data.frame(value = c(rnorm(n, mean = 0, sd = 1))) %>%
+    # Add datetime for Kats
+    
+    tmp2 <- tmp %>%
       mutate(timepoint = row_number())
     
-    unique_times <- unique(tmp$timepoint)
+    unique_times <- unique(tmp2$timepoint)
     
     datetimes <- data.frame(timepoint = unique_times) %>%
       dplyr::mutate(time = seq(as.Date("1800-01-01"), by = "day", length.out = length(unique_times)))
     
     # Join in datetimes
     
-    tmp2 <- tmp %>%
+    tmp3 <- tmp2 %>%
       dplyr::left_join(datetimes, by = c("timepoint" = "timepoint")) %>%
       dplyr::select(c(time, value))
     
-    write.csv(tmp2, paste0("data/sims/kats/",n,"_",i,".csv"))
-  }
-  
-  # Make no column header version for Matlab
-  
-  for(i in 1:nsims){
+    write.csv(tmp3, paste0("data/sims/kats/",n,"_",i,".csv"))
     
-    values <- rnorm(n, mean = 0, sd = 1)
+    # Make no column header version for Matlab
+    
+    values <- tmp$values
     write.table(values, paste0("data/sims/hctsa/",n,"_",i,".csv"), col.names = FALSE, sep = ",", row.names = FALSE)
   }
 }
