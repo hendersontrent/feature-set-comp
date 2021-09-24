@@ -202,7 +202,7 @@ data.frame(mean_gaussian = gaussian$mean,
         legend.position = "bottom",
         text = element_text(size = 18))
 
-# Numerical check
+# Numerical check with Bonferroni correction
 
 storage <- list()
 unique_ids <- unique(gaussian$unique_id)
@@ -224,6 +224,5 @@ for(i in unique_ids){
 }
 
 pVals <- rbindlist(storage, use.names = TRUE) %>%
-  arrange(pVal) %>%
-  mutate(pVal = pVal / length(unique_ids))
+  mutate(indicator = ifelse(pVal < 0.05 / length(unique_ids), "Significant", "N.S."))
 
