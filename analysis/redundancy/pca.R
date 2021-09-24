@@ -182,4 +182,3 @@ print(p1)
 
 p2 <- ggpubr::ggarrange(p, p1, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
 ggsave("output/pca-merged.pdf", p2, units = "in", height = 13, width = 10)
-ggsave("output/pca-cumsum-scaled.pdf", p1, units = "in", height = 10, width = 10)
