@@ -176,6 +176,7 @@ p <- all_comptimes %>%
   scale_y_log10(limits = c(1e-3, 1e2),
                 breaks = scales::trans_breaks("log10", function(x) 10^x, n = 6),
                 labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  annotation_logticks() +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
@@ -220,6 +221,7 @@ p1 <- all_comptimes %>%
                 labels = trans_format("log10", label_math())) +
   scale_x_log10(breaks = c(1e2, 1e3),
                 labels = trans_format("log10", label_math())) +
+  annotation_logticks() +
   theme_bw() +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
@@ -231,5 +233,4 @@ print(p1)
 # Save outputs
 
 p2 <- ggpubr::ggarrange(p, p1, nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom")
-ggsave("output/comp-time-merged.png", p2, units = "in", height = 7, width = 14)
 ggsave("output/comp-time-merged.pdf", p2, units = "in", height = 7, width = 14)
