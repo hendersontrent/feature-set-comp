@@ -218,11 +218,11 @@ for(i in unique_ids){
   outs <- t.test(tmpGauss$mean, tmpSine$mean)
   
   tmp <- data.frame(unique_id = i,
-                    pVal = outs$p.value)
+                    pVal = outs$p.value,
+                    statistic = outs$statistic)
   
   storage[[i]] <- tmp
 }
 
 pVals <- rbindlist(storage, use.names = TRUE) %>%
   mutate(indicator = ifelse(pVal < 0.05 / length(unique_ids), "Significant", "N.S."))
-
