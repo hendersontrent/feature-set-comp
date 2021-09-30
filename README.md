@@ -16,3 +16,5 @@ The main chunk of the repository is largely organised around the `analysis/` fol
 * `redundancy/` - Principal components analysis of within-set feature composition
 
 The `webscraping/` folder contains all the scripts necessary to automatically download and process the Empirical 1000 dataset used in this project.
+
+The `R/` folder contains a collection of functions that were written and reused throughout the project.
