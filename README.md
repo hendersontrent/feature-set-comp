@@ -1,4 +1,7 @@
 # feature-set-comp
+
+[![DOI](https://zenodo.org/badge/365082962.svg)](https://zenodo.org/badge/latestdoi/365082962)
+
 Compares various time-series feature sets on computational performance, within-set structure, and between-set relationships.
 
 ## Repository Structure
