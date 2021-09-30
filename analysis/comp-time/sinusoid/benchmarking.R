@@ -150,14 +150,6 @@ grab_comp_times <- function(R_path = NULL, tsfresh_path = NULL, TSFEL_path = NUL
   # Bind all together
   
   all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
-    mutate(feature_set_feats = case_when(
-      feature_set == "catch22"    ~ "catch22 (22)",
-      feature_set == "feasts"     ~ "feasts (43)",
-      feature_set == "hctsa"      ~ "hctsa (7300)",
-      feature_set == "Kats"       ~ "Kats (40)",
-      feature_set == "tsfeatures" ~ "tsfeatures (62)",
-      feature_set == "TSFEL"      ~ "TSFEL (285-390)",
-      feature_set == "tsfresh"    ~ "tsfresh (1558)")) %>%
     dplyr::select(-c(X1))
   
   return(all_comptimes)
@@ -186,8 +178,7 @@ sinusoid <- grab_comp_times(R_path = "output/comptime/sinusoid/R.csv",
 data.frame(mean_gaussian = gaussian$mean,
                       mean_sinusoid = sinusoid$mean,
                       ts_length = gaussian$ts_length,
-                      feature_set = gaussian$feature_set,
-                      feature_set_feats = gaussian$feature_set_feats) %>%
+                      feature_set = gaussian$feature_set) %>%
   ggplot(aes(x = mean_gaussian, y = mean_sinusoid, colour = feature_set)) +
   geom_point(size = 1.5) +
   labs(x = "Gaussian computation time",
@@ -201,28 +192,3 @@ data.frame(mean_gaussian = gaussian$mean,
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
         text = element_text(size = 18))
-
-# Numerical check with Bonferroni correction
-
-storage <- list()
-unique_ids <- unique(gaussian$unique_id)
-
-for(i in unique_ids){
-  
-  tmpGauss <- gaussian %>%
-    filter(unique_id == i)
-  
-  tmpSine <- sinusoid %>%
-    filter(unique_id == i)
-  
-  outs <- t.test(tmpGauss$mean, tmpSine$mean)
-  
-  tmp <- data.frame(unique_id = i,
-                    pVal = outs$p.value,
-                    statistic = outs$statistic)
-  
-  storage[[i]] <- tmp
-}
-
-pVals <- rbindlist(storage, use.names = TRUE) %>%
-  mutate(indicator = ifelse(pVal < 0.05 / length(unique_ids), "Significant", "N.S."))

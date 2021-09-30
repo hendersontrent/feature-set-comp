@@ -25,9 +25,10 @@ generate_processes_sinusoid <- function(n, nsims = 10){
   
   for(i in 1:nsims){
     
-    x <- seq(0, 8 * pi, length.out = n)
-    y <- sin(x)
-    tmp <- data.frame(value = y + rnorm(n, mean = 0, sd = 0.1))
+    x <- seq(0, 3 * pi, length.out = n)
+    epsilon <- rnorm(n, mean = 0, sd = 1)
+    y <- 2 * sin(2 * x) + epsilon
+    tmp <- data.frame(value = y)
     
     write.csv(tmp, paste0("data/sims/sinusoid/",n,"_",i,".csv"))
     

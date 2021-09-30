@@ -139,15 +139,7 @@ hctsa_results <- readr::read_csv("output/comptime/outputTimes.csv", col_names = 
 # Bind all together
 #-------------------
 
-all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results) %>%
-  mutate(feature_set_feats = case_when(
-          feature_set == "catch22"    ~ "catch22 (22)",
-          feature_set == "feasts"     ~ "feasts (43)",
-          feature_set == "hctsa"      ~ "hctsa (7300)",
-          feature_set == "Kats"       ~ "Kats (40)",
-          feature_set == "tsfeatures" ~ "tsfeatures (62)",
-          feature_set == "TSFEL"      ~ "TSFEL (285-390)",
-          feature_set == "tsfresh"    ~ "tsfresh (1558)"))
+all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_results, hctsa_results)
 
 #------------------ Graphical summary ---------------
 
@@ -156,16 +148,16 @@ all_comptimes <- bind_rows(r_pkg_results, kats_results, tsfresh_results, tsfel_r
 #---------
 
 p <- all_comptimes %>%
-  group_by(feature_set, feature_set_feats, ts_length) %>%
+  group_by(feature_set, ts_length) %>%
   summarise(avg = median(mean),
             sd = sd(mean),
             lower = quantile(mean, probs = 0.25),
             upper = quantile(mean, probs = 0.75)) %>%
   ungroup() %>%
   ggplot() +
-  geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
-  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 1.5) +
+  geom_line(aes(x = ts_length, y = avg, colour = feature_set)) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set), size = 1.5) +
   labs(subtitle = "A",
        x = "Time series length (samples)",
        y = "Computation time (s)",
@@ -191,26 +183,31 @@ print(p)
 
 p1 <- all_comptimes %>%
   mutate(mean_scaled = case_when(
-          feature_set == "catch22"                   ~ mean/22,
-          feature_set == "feasts"                    ~ mean/43,
-          feature_set == "hctsa"                     ~ mean/7300,
-          feature_set == "Kats"                      ~ mean/40,
-          feature_set == "tsfeatures"                ~ mean/22,
-          feature_set == "tsfresh"                   ~ mean/1558,
-          feature_set == "TSFEL" & ts_length == 100  ~ mean/185,
-          feature_set == "TSFEL" & ts_length == 250  ~ mean/260,
-          feature_set == "TSFEL" & ts_length == 500  ~ mean/285,
-          feature_set == "TSFEL" & ts_length > 500   ~ mean/390)) %>%
-  group_by(feature_set, feature_set_feats, ts_length) %>%
+          feature_set == "catch22"                    ~ mean/22,
+          feature_set == "feasts"                     ~ mean/43,
+          feature_set == "Kats"                       ~ mean/37,
+          feature_set == "tsfeatures"                 ~ mean/22,
+          feature_set == "hctsa" & ts_length == 100   ~ mean/(7729 - 706),
+          feature_set == "hctsa" & ts_length == 250   ~ mean/(7729 - 469),
+          feature_set == "hctsa" & ts_length == 500   ~ mean/(7729 - 458),
+          feature_set == "hctsa" & ts_length == 750   ~ mean/(7729 - 470),
+          feature_set == "hctsa" & ts_length == 1000  ~ mean/(7729 - 443),
+          feature_set == "tsfresh" & ts_length == 100 ~ mean/(1558 - 392),
+          feature_set == "tsfresh" & ts_length != 100 ~ mean/1558,
+          feature_set == "TSFEL" & ts_length == 100   ~ mean/185,
+          feature_set == "TSFEL" & ts_length == 250   ~ mean/260,
+          feature_set == "TSFEL" & ts_length == 500   ~ mean/285,
+          feature_set == "TSFEL" & ts_length > 500    ~ mean/390)) %>%
+  group_by(feature_set, ts_length) %>%
   summarise(avg = median(mean_scaled),
             sd = sd(mean_scaled),
             lower = quantile(mean_scaled, probs = 0.25),
             upper = quantile(mean_scaled, probs = 0.75)) %>%
   ungroup() %>%
   ggplot() +
-  geom_line(aes(x = ts_length, y = avg, colour = feature_set_feats)) +
-  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set_feats, ymin = lower, ymax = upper)) +
-  geom_point(aes(x = ts_length, y = avg, colour = feature_set_feats), size = 1.5) +
+  geom_line(aes(x = ts_length, y = avg, colour = feature_set)) +
+  geom_errorbar(aes(x = ts_length, y = avg, colour = feature_set, ymin = lower, ymax = upper)) +
+  geom_point(aes(x = ts_length, y = avg, colour = feature_set), size = 1.5) +
   labs(subtitle = "B",
        x = "Time series length (samples)",
        y = "Computation time per feature (s)",
