@@ -142,7 +142,7 @@ p <- pca_results %>%
   geom_bar(stat = "identity", alpha = 0.9) +
   scale_fill_brewer(palette = "Dark2") +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(subtitle = "A",
+  labs(subtitle = "B",
        x = "Feature set",
        y = "% of principal components for 90% variance",
        fill = NULL) +
@@ -167,7 +167,7 @@ p1 <- pca_results %>%
   scale_colour_brewer(palette = "Dark2") +
   scale_x_continuous(labels = function(x) paste0(x, "%")) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
-  labs(subtitle = "B",
+  labs(subtitle = "A",
        x = "% of principal components",
        y = "Cumulative variance explained (%)",
        colour = NULL) +
@@ -180,5 +180,5 @@ print(p1)
 
 # Save plots
 
-p2 <- ggpubr::ggarrange(p, p1, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
+p2 <- ggpubr::ggarrange(p1, p, nrow = 2, ncol = 1, common.legend = TRUE, legend = "bottom")
 ggsave("output/pca-merged.pdf", p2, units = "in", height = 13, width = 10)
