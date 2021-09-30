@@ -183,16 +183,21 @@ print(p)
 
 p1 <- all_comptimes %>%
   mutate(mean_scaled = case_when(
-          feature_set == "catch22"                   ~ mean/22,
-          feature_set == "feasts"                    ~ mean/43,
-          feature_set == "hctsa"                     ~ mean/7300,
-          feature_set == "Kats"                      ~ mean/40,
-          feature_set == "tsfeatures"                ~ mean/22,
-          feature_set == "tsfresh"                   ~ mean/1558,
-          feature_set == "TSFEL" & ts_length == 100  ~ mean/185,
-          feature_set == "TSFEL" & ts_length == 250  ~ mean/260,
-          feature_set == "TSFEL" & ts_length == 500  ~ mean/285,
-          feature_set == "TSFEL" & ts_length > 500   ~ mean/390)) %>%
+          feature_set == "catch22"                    ~ mean/22,
+          feature_set == "feasts"                     ~ mean/43,
+          feature_set == "Kats"                       ~ mean/37,
+          feature_set == "tsfeatures"                 ~ mean/22,
+          feature_set == "hctsa" & ts_length == 100   ~ mean/(7729 - 706),
+          feature_set == "hctsa" & ts_length == 250   ~ mean/(7729 - 469),
+          feature_set == "hctsa" & ts_length == 500   ~ mean/(7729 - 458),
+          feature_set == "hctsa" & ts_length == 750   ~ mean/(7729 - 470),
+          feature_set == "hctsa" & ts_length == 1000  ~ mean/(7729 - 443),
+          feature_set == "tsfresh" & ts_length == 100 ~ mean/(1558 - 392),
+          feature_set == "tsfresh" & ts_length != 100 ~ mean/1558,
+          feature_set == "TSFEL" & ts_length == 100   ~ mean/185,
+          feature_set == "TSFEL" & ts_length == 250   ~ mean/260,
+          feature_set == "TSFEL" & ts_length == 500   ~ mean/285,
+          feature_set == "TSFEL" & ts_length > 500    ~ mean/390)) %>%
   group_by(feature_set, ts_length) %>%
   summarise(avg = median(mean_scaled),
             sd = sd(mean_scaled),
